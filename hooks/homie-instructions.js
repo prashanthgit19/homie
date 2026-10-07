@@ -97,7 +97,7 @@ function getFallbackInstructions(level) {
     'Switch: /homie yo|dawg|mafa.';
 }
 
-function getChillInstructions(level) {
+function getHomieInstructions(level) {
   const effectiveLevel = normalizeLevel(level);
   if (!effectiveLevel || effectiveLevel === 'off') return '';
 
@@ -112,5 +112,5 @@ function getChillInstructions(level) {
 module.exports = {
   filterSkillBodyForLevel,
   getFallbackInstructions,
-  getChillInstructions,
+  getHomieInstructions,
 };

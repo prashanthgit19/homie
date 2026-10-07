@@ -9,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const { getDefaultLevel, isShellSafe } = require('./homie-config');
-const { getChillInstructions } = require('./homie-instructions');
+const { getHomieInstructions } = require('./homie-instructions');
 const {
   setLevel,
   writeHookOutput,
@@ -35,7 +35,7 @@ try {
 }
 
 // 2. Emit the homie ruleset at the default level.
-let output = getChillInstructions(level);
+let output = getHomieInstructions(level);
 
 // 3. Detect missing statusline config — nudge Claude to help set it up.
 // Codex and Copilot don't read Claude settings.json; skip the nudge there.

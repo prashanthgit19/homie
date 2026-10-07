@@ -9,24 +9,24 @@ const path = require('node:path');
 const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'homie-instr-test-'));
 process.env.XDG_CONFIG_HOME = tmpRoot;
 
-const { filterSkillBodyForLevel, getChillInstructions, getFallbackInstructions } =
+const { filterSkillBodyForLevel, getHomieInstructions, getFallbackInstructions } =
   require('../hooks/homie-instructions');
 const { normalizeLevel } = require('../hooks/homie-config');
 
 test('off produces no injection', () => {
-  assert.equal(getChillInstructions('off'), '');
-  assert.equal(getChillInstructions(null), '');
-  assert.equal(getChillInstructions('banana'), '');
+  assert.equal(getHomieInstructions('off'), '');
+  assert.equal(getHomieInstructions(null), '');
+  assert.equal(getHomieInstructions('banana'), '');
 });
 
 test('header names the level', () => {
-  assert.ok(getChillInstructions('yo').startsWith('HOMIE MODE ACTIVE — level: yo'));
-  assert.ok(getChillInstructions('dawg').startsWith('HOMIE MODE ACTIVE — level: dawg'));
-  assert.ok(getChillInstructions('mafa').startsWith('HOMIE MODE ACTIVE — level: mafa'));
+  assert.ok(getHomieInstructions('yo').startsWith('HOMIE MODE ACTIVE — level: yo'));
+  assert.ok(getHomieInstructions('dawg').startsWith('HOMIE MODE ACTIVE — level: dawg'));
+  assert.ok(getHomieInstructions('mafa').startsWith('HOMIE MODE ACTIVE — level: mafa'));
 });
 
 test('yo output keeps only the yo row and yo example', () => {
-  const out = getChillInstructions('yo');
+  const out = getHomieInstructions('yo');
   assert.ok(out.includes('| **yo** |'), 'yo table row survives');
   assert.ok(!out.includes('| **dawg** |'), 'dawg row dropped');
   assert.ok(!out.includes('| **mafa** |'), 'mafa row dropped');
@@ -36,7 +36,7 @@ test('yo output keeps only the yo row and yo example', () => {
 });
 
 test('mafa output keeps only the mafa row and mafa example', () => {
-  const out = getChillInstructions('mafa');
+  const out = getHomieInstructions('mafa');
   assert.ok(out.includes('| **mafa** |'));
   assert.ok(!out.includes('| **yo** |'));
   assert.ok(!out.includes('| **dawg** |'));
@@ -46,7 +46,7 @@ test('mafa output keeps only the mafa row and mafa example', () => {
 
 test('contract, voice-lives, guardrails, drop-the-bit survive at every level', () => {
   for (const level of ['yo', 'dawg', 'mafa']) {
-    const out = getChillInstructions(level);
+    const out = getHomieInstructions(level);
     assert.ok(out.includes('## The contract'), level);
     assert.ok(out.includes('## Where the voice lives'), level);
     assert.ok(out.includes('## Guardrails'), level);
@@ -58,14 +58,14 @@ test('contract, voice-lives, guardrails, drop-the-bit survive at every level', (
 });
 
 test('non-level bullets are never dropped', () => {
-  const out = getChillInstructions('yo');
+  const out = getHomieInstructions('yo');
   assert.ok(out.includes('- Roast decisions, never the person'), 'guardrail bullet survives');
   assert.ok(!/- yo:\s*"/.test(out.replace(/- yo: "/, '')) || /- yo: "/.test(out));
 });
 
 test('label-free examples survive at every level', () => {
   for (const level of ['yo', 'dawg', 'mafa']) {
-    const out = getChillInstructions(level);
+    const out = getHomieInstructions(level);
     assert.ok(out.includes('**Personality stays out of the artifact.**'), level);
     assert.ok(out.includes('**Drop the bit.**'), level);
     assert.ok(out.includes('fix(session): handle null user during token refresh'), level);
@@ -73,7 +73,7 @@ test('label-free examples survive at every level', () => {
 });
 
 test('frontmatter is stripped from injected body', () => {
-  const out = getChillInstructions('yo');
+  const out = getHomieInstructions('yo');
   assert.ok(!out.includes('---\nname: homie'));
   assert.ok(!out.startsWith('---'));
 });
@@ -92,20 +92,20 @@ test('fallback instructions carry the level and core blocks', () => {
 
 test('mafa-only profanity examples never reach yo or dawg context', () => {
   for (const level of ['yo', 'dawg']) {
-    const out = getChillInstructions(level);
+    const out = getHomieInstructions(level);
     assert.ok(!out.includes('Bad mafa'), level);
     assert.ok(!out.includes('Good mafa'), level);
     assert.ok(!out.includes('fucking'), level);
   }
   // mafa keeps its own good/bad examples
-  const mafaOut = getChillInstructions('mafa');
+  const mafaOut = getHomieInstructions('mafa');
   assert.ok(mafaOut.includes('Bad mafa'));
   assert.ok(mafaOut.includes('Good mafa'));
   assert.ok(mafaOut.includes('One swear, where it counts'));
 });
 
 test('block-skip ends at the next bold header or section heading', () => {
-  const out = getChillInstructions('yo');
+  const out = getHomieInstructions('yo');
   // The block after Bad/Good mafa is the label-free artifact example; it must
   // survive at yo.
   assert.ok(out.includes('**Personality stays out of the artifact.**'));

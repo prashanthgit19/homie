@@ -1,9 +1,9 @@
 // homie — OpenCode V2 plugin.
 //
-// Injects the homie personality into every model call's system context at the
-// active level, persists /homie level switches, registers the /homie command
-// and skill. Reuses the shared instruction builder so Claude Code, Codex, and
-// OpenCode all read one source of truth.
+// Registers the /homie command and skill, persists level switches, and
+// injects the homie personality into every model call's system context at
+// the active level. Command replies are one plain line — the full ruleset
+// is delivered invisibly through the context hook, never dumped into chat.
 //
 // Add to your opencode.json:
 //   { "plugins": ["@kpnpm/homie"] }
@@ -19,8 +19,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // The shared instruction builder is CommonJS; bridge to it from this ES module.
 const require = createRequire(import.meta.url);
-const { getChillInstructions } = require('../../hooks/homie-instructions');
-const { getDefaultLevel, normalizeLevel } = require('../../hooks/homie-config');
+const { getHomieInstructions } = require('../../hooks/homie-instructions');
+const { getDefaultLevel, normalizeLevel, writeDefaultLevel } = require('../../hooks/homie-config');
 
 // OpenCode has no flag-file convention of its own; keep the level beside its config.
 const statePath = path.join(
@@ -42,16 +42,17 @@ function writeLevel(level) {
   fs.writeFileSync(statePath, level);
 }
 
+// Returns the applied level, null for an unrecognized level, or undefined
+// when nothing changed (bare /homie while already on → report-only).
 // `off` is persisted like any level; the context hook reads it and stays
-// silent. An unrecognized level leaves the current one alone. Bare /homie
-// turns the voice on at yo (per SKILL.md); with any level active the command
-// just reports — the execute() reply shows the current level.
+// silent. Bare /homie turns the voice on at yo (per SKILL.md).
 function persistLevel(args) {
   const wanted = String(args == null ? '' : args).trim();
-  if (!wanted && readLevel() !== 'off') return; // bare /homie: report-only when active
+  if (!wanted && readLevel() !== 'off') return undefined;
   const level = wanted ? normalizeLevel(wanted) : 'yo';
-  if (!level) return;
+  if (!level) return null;
   writeLevel(level);
+  return level;
 }
 
 function readSkill() {
@@ -90,11 +91,32 @@ export default {
         name: 'homie',
         description: 'Switch personality level (off/yo/dawg/mafa)',
         execute: async ({ sessionID, prompt, delivery }) => {
-          persistLevel(prompt.text);
-          const level = readLevel();
-          const text = level === 'off'
-            ? 'Homie is off — back to the normal tone.'
-            : 'HOMIE MODE — level: ' + level + '.\n\n' + getChillInstructions(level);
+          const wanted = String(prompt.text || '').trim();
+          const words = wanted.split(/\s+/).filter(Boolean);
+          const first = words[0] || '';
+          let text;
+
+          if (first === 'default') {
+            const applied = words[1] ? writeDefaultLevel(words[1]) : null;
+            text = applied
+              ? 'Homie default set: ' + applied + '. New sessions start at ' + applied + '.'
+              : 'Usage: /homie default <level>. Levels: off, yo, dawg, mafa.';
+          } else {
+            const applied = persistLevel(first);
+            const level = readLevel();
+            if (first && applied === null) {
+              text = 'Unknown level "' + first + '". Levels: off, yo, dawg, mafa.';
+            } else if (level === 'off') {
+              text = 'Homie off.';
+            } else {
+              text = 'Homie mode: ' + level + '.';
+            }
+          }
+
+          // One plain line only. The context hook below injects the full
+          // ruleset into the system context of this same model call, so the
+          // confirmation turn is already in voice — without dumping the
+          // ruleset into the chat.
           await ctx.session.prompt({ ...prompt, sessionID, text, delivery });
         },
       });
@@ -105,7 +127,7 @@ export default {
     await ctx.session.hook('context', (event) => {
       const level = readLevel();
       if (level === 'off') return;
-      event.system.push({ type: 'text', text: getChillInstructions(level) });
+      event.system.push({ type: 'text', text: getHomieInstructions(level) });
     });
   },
 };

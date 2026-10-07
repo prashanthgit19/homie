@@ -9,7 +9,7 @@ const {
   clearLevel,
   writeHookOutput,
 } = require('./homie-runtime');
-const { getChillInstructions } = require('./homie-instructions');
+const { getHomieInstructions } = require('./homie-instructions');
 
 let input = '';
 let done = false;
@@ -75,7 +75,7 @@ function finish() {
         // Deliver the new level's ruleset along with the confirmation so the
         // switch turn itself is already in voice.
         const header = 'HOMIE MODE CHANGED — level: ' + level;
-        writeHookOutput('UserPromptSubmit', level, header + '\n\n' + getChillInstructions(level));
+        writeHookOutput('UserPromptSubmit', level, header + '\n\n' + getHomieInstructions(level));
       } else if (level === 'off') {
         // Persist `off` like any level (plan lesson #7): clearing the flag
         // races the default logic — an absent flag reads as the default level.
