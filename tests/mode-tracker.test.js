@@ -155,6 +155,26 @@ test('runtime: per-project flag is preferred on read', () => {
   delete process.env.CLAUDE_PROJECT_DIR;
 });
 
+test('activate: off default persists off over a stale flag (badge goes blank)', () => {
+  const { execFileSync } = require('node:child_process');
+  const fsx = require('node:fs');
+  const sharedFlag = path.join(process.env.CLAUDE_CONFIG_DIR, '.homie-active');
+  // Stale flag from a previous mafa session
+  fsx.mkdirSync(process.env.CLAUDE_CONFIG_DIR, { recursive: true });
+  fsx.writeFileSync(sharedFlag, 'mafa');
+  const env = { ...process.env, HOMIE_DEFAULT_LEVEL: 'off' };
+  delete env.CLAUDE_PROJECT_DIR;
+  const out = execFileSync('node', [path.resolve(__dirname, '../hooks/homie-activate.js')], {
+    env, encoding: 'utf8',
+  });
+  assert.equal(out, '', 'off default must emit nothing');
+  assert.equal(
+    fsx.readFileSync(sharedFlag, 'utf8').trim(),
+    'off',
+    'stale flag must be overwritten with off so the statusline badge goes blank',
+  );
+});
+
 test.after(() => {
   fs.rmSync(tmpRoot, { recursive: true, force: true });
 });

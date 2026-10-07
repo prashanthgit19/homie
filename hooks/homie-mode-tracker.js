@@ -6,7 +6,6 @@ const { getDefaultLevel, writeDefaultLevel, isDeactivationCommand } = require('.
 const {
   readLevel,
   setLevel,
-  clearLevel,
   writeHookOutput,
 } = require('./homie-runtime');
 const { getHomieInstructions } = require('./homie-instructions');

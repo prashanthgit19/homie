@@ -16,14 +16,16 @@ const {
   isCodex,
   isCopilot,
   getClaudeDir,
-  statePath,
 } = require('./homie-runtime');
 
 const level = getDefaultLevel();
 
-// "off" default — skip activation entirely, don't write flag or emit rules.
+// "off" default — persist off like any level: a stale flag from a previous
+// session would otherwise keep the statusline badge showing the old level
+// while this session is normal. Stay silent: emitting a notice every session
+// is context noise for a plugin that is off.
 if (level === 'off') {
-  try { writeHookOutput('SessionStart', 'off', 'HOMIE DEFAULT OFF — start normal.'); } catch (e) {}
+  try { setLevel('off'); } catch (e) {}
   process.exit(0);
 }
 
