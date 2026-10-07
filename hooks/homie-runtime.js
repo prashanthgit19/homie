@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// chill — runtime: flag IO, host detection, hook output shapes.
+// homie — runtime: flag IO, host detection, hook output shapes.
 
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { createHash } = require('crypto');
-const { getDefaultLevel, normalizeLevel } = require('./chill-config');
+const { getDefaultLevel, normalizeLevel } = require('./homie-config');
 
-const STATE_FILE = '.chill-active';
+const STATE_FILE = '.homie-active';
 
 // Host detection. Codex sets PLUGIN_DATA; Copilot sets COPILOT_PLUGIN_DATA or
 // runs the plugin from under .vscode/agent-plugins/; otherwise native Claude.
@@ -40,7 +40,7 @@ const statePath = path.join(stateDir, STATE_FILE);
 const projectDir = (process.env.CLAUDE_PROJECT_DIR || '').trim();
 // Replacing separators with '_' aliases distinct paths; hash instead.
 const projectStatePath = projectDir
-  ? path.join(stateDir, 'chill-modes',
+  ? path.join(stateDir, 'homie-modes',
     createHash('sha256').update(path.normalize(projectDir)).digest('hex'))
   : null;
 

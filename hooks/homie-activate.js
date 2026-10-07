@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// chill — SessionStart activation hook (Claude Code, also Codex and Copilot).
+// homie — SessionStart activation hook (Claude Code, also Codex and Copilot).
 //
 // Runs on every session start:
 //   1. Resets the live flag to the configured default level
-//   2. Emits the chill ruleset as hidden SessionStart context
+//   2. Emits the homie ruleset as hidden SessionStart context
 //   3. Detects missing statusline config and emits a one-shot setup nudge
 
 const fs = require('fs');
 const path = require('path');
-const { getDefaultLevel, isShellSafe } = require('./chill-config');
-const { getChillInstructions } = require('./chill-instructions');
+const { getDefaultLevel, isShellSafe } = require('./homie-config');
+const { getChillInstructions } = require('./homie-instructions');
 const {
   setLevel,
   writeHookOutput,
@@ -17,13 +17,13 @@ const {
   isCopilot,
   getClaudeDir,
   statePath,
-} = require('./chill-runtime');
+} = require('./homie-runtime');
 
 const level = getDefaultLevel();
 
 // "off" default — skip activation entirely, don't write flag or emit rules.
 if (level === 'off') {
-  try { writeHookOutput('SessionStart', 'off', 'CHILL DEFAULT OFF — start normal.'); } catch (e) {}
+  try { writeHookOutput('SessionStart', 'off', 'HOMIE DEFAULT OFF — start normal.'); } catch (e) {}
   process.exit(0);
 }
 
@@ -34,7 +34,7 @@ try {
   // Silent fail — flag is best-effort, don't block the hook
 }
 
-// 2. Emit the chill ruleset at the default level.
+// 2. Emit the homie ruleset at the default level.
 let output = getChillInstructions(level);
 
 // 3. Detect missing statusline config — nudge Claude to help set it up.
@@ -58,7 +58,7 @@ if (!isCodex && !isCopilot) try {
   // a versioned cache dir that the update deleted. Only absolute paths are
   // checked; on Windows only drive-letter or UNC paths count as absolute.
   const ref = statusCommand &&
-    statusCommand.match(/"([^"]*chill-statusline\.(?:sh|ps1))"|(\S*chill-statusline\.(?:sh|ps1))/);
+    statusCommand.match(/"([^"]*homie-statusline\.(?:sh|ps1))"|(\S*homie-statusline\.(?:sh|ps1))/);
   const refPath = ref ? (ref[1] || ref[2]) : null;
   const checkable = refPath && isShellSafe(refPath) && path.isAbsolute(refPath) &&
     (!isWindows || /^([A-Za-z]:[\\/]|\\\\)/.test(refPath));
@@ -68,12 +68,12 @@ if (!isCodex && !isCopilot) try {
   // updates. Copy to a temp file, then rename: a concurrent session never
   // runs a half-written script.
   const usePs1 = refPath ? refPath.endsWith('.ps1') : isWindows;
-  const scriptName = usePs1 ? 'chill-statusline.ps1' : 'chill-statusline.sh';
+  const scriptName = usePs1 ? 'homie-statusline.ps1' : 'homie-statusline.sh';
   const scriptPath = path.join(claudeDir, scriptName);
 
   // Nudge at most once — the flag file records the user has seen (and
   // implicitly declined) the offer. A broken path is nudged once per path.
-  const nudgeFlagPath = path.join(claudeDir, '.chill-statusline-nudged');
+  const nudgeFlagPath = path.join(claudeDir, '.homie-statusline-nudged');
   let nudged = null;
   try { nudged = fs.readFileSync(nudgeFlagPath, 'utf8'); } catch (e) { /* not nudged yet */ }
   const nudge = stalePath ? nudged !== stalePath : statusCommand === null && nudged === null;
@@ -95,8 +95,8 @@ if (!isCodex && !isCopilot) try {
     if (stalePath) {
       output += "\n\n" +
         "STATUSLINE BROKEN: The statusLine in " + settingsPath + " runs " + stalePath +
-        ", which no longer exists (the chill plugin was updated and its old version removed), " +
-        "so the chill badge is blank. Replace that path with " + scriptPath + ", " +
+        ", which no longer exists (the homie plugin was updated and its old version removed), " +
+        "so the homie badge is blank. Replace that path with " + scriptPath + ", " +
         "quoting it for your shell. Keep the rest of the command. " +
         "Proactively offer to fix this for the user on first interaction.";
     } else if (isShellSafe(scriptPath)) {
@@ -106,14 +106,14 @@ if (!isCodex && !isCopilot) try {
       const statusLineSnippet =
         '"statusLine": { "type": "command", "command": ' + JSON.stringify(command) + ' }';
       output += "\n\n" +
-        "STATUSLINE SETUP NEEDED: The chill plugin includes a statusline badge showing the active " +
-        "level (e.g. [CHILL], [CHILL:DAWG], [CHILL:MAFA]). It is not configured yet. " +
+        "STATUSLINE SETUP NEEDED: The homie plugin includes a statusline badge showing the active " +
+        "level (e.g. [HOMIE], [HOMIE:DAWG], [HOMIE:MAFA]). It is not configured yet. " +
         "To enable, add this to " + settingsPath + ": " +
         statusLineSnippet + " " +
         "Proactively offer to set this up for the user on first interaction.";
     } else {
       output += "\n\n" +
-        "STATUSLINE SETUP NEEDED: The chill plugin includes a statusline badge showing the active level. " +
+        "STATUSLINE SETUP NEEDED: The homie plugin includes a statusline badge showing the active level. " +
         "Its path contains characters unsafe to embed in a shell command, so configure it manually: " +
         "add a statusLine command of type \"command\" that runs " + scriptName +
         " from " + claudeDir + " to " + settingsPath + ", quoting/escaping the path for your shell. " +

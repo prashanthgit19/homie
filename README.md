@@ -1,8 +1,8 @@
-# chill
+# homie
 
 *Same brain. Same code. Different voice.*
 
-Your coding agent didn't need another corporate assistant. **chill** switches
+Your coding agent didn't need another corporate assistant. **homie** switches
 its chat voice to a technically competent friend — in three levels:
 
 | Level | Voice |
@@ -51,11 +51,11 @@ Same four technical points every time. Only the voice changes.
 **Claude Code:**
 
 ```
-/plugin marketplace add prashanthgit19/chill
+/plugin marketplace add prashanthgit19/homie
 ```
 
 ```
-/plugin install chill@chill
+/plugin install homie@homie
 ```
 
 (two separate prompts)
@@ -63,40 +63,40 @@ Same four technical points every time. Only the voice changes.
 **OpenCode:**
 
 ```bash
-opencode plugin add @prashanthgit19/chill
+opencode plugin add @prashanthgit19/homie
 ```
 
 or in a project's `opencode.json`:
 
 ```json
-{ "plugins": ["@prashanthgit19/chill"] }
+{ "plugins": ["@prashanthgit19/homie"] }
 ```
 
 **Codex:**
 
 ```bash
-codex plugin marketplace add prashanthgit19/chill
-codex plugin add chill@chill
+codex plugin marketplace add prashanthgit19/homie
+codex plugin add homie@homie
 ```
 
 Then open `/hooks` in Codex, trust the two lifecycle hooks, and start a new
 thread.
 
 **Any other agent:** copy [`AGENTS.md`](AGENTS.md) into your project, or ask
-your agent to install [`skills/chill/SKILL.md`](skills/chill/SKILL.md) as a
+your agent to install [`skills/homie/SKILL.md`](skills/homie/SKILL.md) as a
 skill. More in [INSTALL.md](INSTALL.md).
 
 ## Commands
 
 | Command | What it does |
 | --- | --- |
-| `/chill` | Turn the voice on at **yo**; already on → report the current level |
-| `/chill yo` \| `dawg` \| `mafa` | Set the level |
-| `/chill off` | Back to normal |
-| `/chill default <level>` | Set what new sessions start at (persists across restarts) |
+| `/homie` | Turn the voice on at **yo**; already on → report the current level |
+| `/homie yo` \| `dawg` \| `mafa` | Set the level |
+| `/homie off` | Back to normal |
+| `/homie default <level>` | Set what new sessions start at (persists across restarts) |
 
 Plain requests work too: "be blunter" goes up one level, "tone it down" goes
-down one. "stop chill" turns it off.
+down one. "stop homie" turns it off.
 
 Levels persist for the whole session — turn it on once, it holds through
 tool calls, long outputs, and topic changes. New sessions start at your
@@ -106,27 +106,27 @@ configured default (**yo** out of the box).
 
 Default level for new sessions, in priority order:
 
-1. `CHILL_DEFAULT_LEVEL` env var (`off`/`yo`/`dawg`/`mafa`)
-2. `~/.config/chill/config.json` → `{ "defaultLevel": "mafa" }`
+1. `HOMIE_DEFAULT_LEVEL` env var (`off`/`yo`/`dawg`/`mafa`)
+2. `~/.config/homie/config.json` → `{ "defaultLevel": "mafa" }`
 3. `yo` (built-in default)
 
-The Claude Code plugin ships a statusline badge (`[CHILL]`, `[CHILL:DAWG]`,
-`[CHILL:MAFA]`). On first session it offers to set it up; accept, and the
+The Claude Code plugin ships a statusline badge (`[HOMIE]`, `[HOMIE:DAWG]`,
+`[HOMIE:MAFA]`). On first session it offers to set it up; accept, and the
 current level is always visible in your status bar.
 
 ## How it works
 
-One prompt — [`skills/chill/SKILL.md`](skills/chill/SKILL.md) — is the whole
+One prompt — [`skills/homie/SKILL.md`](skills/homie/SKILL.md) — is the whole
 product. No fine-tuning, no second LLM, no proxy. Lifecycle hooks and a
 plugin load that prompt into your agent at the active level and keep it
 loaded every turn:
 
 ```
-/chill mafa → flag file → every turn re-injects the mafa policy
+/homie mafa → flag file → every turn re-injects the mafa policy
 ```
 
-- **Claude Code / Codex:** `SessionStart` injects the ruleset; `UserPromptSubmit` tracks `/chill` switches mid-session.
-- **OpenCode:** a V2 plugin registers the `/chill` command and pushes the policy into the system context on every model call.
+- **Claude Code / Codex:** `SessionStart` injects the ruleset; `UserPromptSubmit` tracks `/homie` switches mid-session.
+- **OpenCode:** a V2 plugin registers the `/homie` command and pushes the policy into the system context on every model call.
 - **Others:** the `AGENTS.md` rules file.
 
 Subagents don't get the voice — subagent prose isn't user-facing.
@@ -142,7 +142,7 @@ response is normal; zero is always fine. Forced profanity is called out in
 the prompt as the main failure mode.
 
 **Does it work with [ponytail](https://github.com/DietrichGebert/ponytail)?**
-Yes, and they compose well: ponytail governs what gets built, chill governs
+Yes, and they compose well: ponytail governs what gets built, homie governs
 how it's talked about. Different halves, no overlap.
 
 ## License

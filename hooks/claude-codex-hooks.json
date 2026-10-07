@@ -6,9 +6,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"require(require('node:path').join(process.env.CLAUDE_PLUGIN_ROOT.replaceAll(String.fromCharCode(92), '/'), 'hooks/chill-activate.js'))\"",
+            "command": "node -e \"require(require('node:path').join(process.env.CLAUDE_PLUGIN_ROOT.replaceAll(String.fromCharCode(92), '/'), 'hooks/homie-activate.js'))\"",
             "timeout": 5,
-            "statusMessage": "Loading chill mode..."
+            "statusMessage": "Loading homie mode..."
           }
         ]
       }
@@ -18,9 +18,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"require(require('node:path').join(process.env.CLAUDE_PLUGIN_ROOT.replaceAll(String.fromCharCode(92), '/'), 'hooks/chill-mode-tracker.js'))\"",
+            "command": "node -e \"require(require('node:path').join(process.env.CLAUDE_PLUGIN_ROOT.replaceAll(String.fromCharCode(92), '/'), 'hooks/homie-mode-tracker.js'))\"",
             "timeout": 5,
-            "statusMessage": "Tracking chill mode..."
+            "statusMessage": "Tracking homie mode..."
           }
         ]
       }

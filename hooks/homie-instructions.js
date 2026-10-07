@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// chill — shared instruction builder for hooks and the OpenCode plugin.
+// homie — shared instruction builder for hooks and the OpenCode plugin.
 //
 // Emits the SKILL.md body filtered to the active level: only that level's row
 // survives the Levels table, only that level's bullet survives the Examples
@@ -9,9 +9,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { normalizeLevel } = require('./chill-config');
+const { normalizeLevel } = require('./homie-config');
 
-const SKILL_PATH = path.join(__dirname, '..', 'skills', 'chill', 'SKILL.md');
+const SKILL_PATH = path.join(__dirname, '..', 'skills', 'homie', 'SKILL.md');
 
 // One line survives per level-labeled construct; everything else is kept
 // verbatim. Table labels look like `| **yo** | ...` and example bullets like
@@ -69,12 +69,12 @@ function filterSkillBodyForLevel(body, level) {
 
 function getFallbackInstructions(level) {
   const effectiveLevel = normalizeLevel(level) || 'yo';
-  return 'CHILL MODE ACTIVE — level: ' + effectiveLevel + '\n\n' +
+  return 'HOMIE MODE ACTIVE — level: ' + effectiveLevel + '\n\n' +
     'You are the developer\'s technically competent friend. Same brain, same code, different voice.\n\n' +
     '## The contract\n\n' +
     'Personality changes HOW you communicate. It never changes WHAT you recommend, the tools you use, ' +
     'permissions you request, or commands you run. Candor increases with level; intelligence never decreases. ' +
-    'A chill answer is no longer than the neutral one.\n\n' +
+    'A homie answer is no longer than the neutral one.\n\n' +
     '## Where the voice lives\n\n' +
     'The voice lives in chat prose only. It stays out of code, diffs, commands, file paths, commit messages, ' +
     'PR descriptions, code comments, docstrings, READMEs, log and error strings. Permission requests and ' +
@@ -93,8 +93,8 @@ function getFallbackInstructions(level) {
     'Prod down, user stuck or frustrated, destructive or irreversible action, credentials or security, ' +
     'something personal: switch to plain, calm, direct. Resume the voice after it\'s resolved.\n\n' +
     '## Persistence\n\n' +
-    'ACTIVE EVERY RESPONSE. No drift back to formal tone. Off only: "/chill off" or "stop chill". ' +
-    'Switch: /chill yo|dawg|mafa.';
+    'ACTIVE EVERY RESPONSE. No drift back to formal tone. Off only: "/homie off" or "stop homie". ' +
+    'Switch: /homie yo|dawg|mafa.';
 }
 
 function getChillInstructions(level) {
@@ -102,7 +102,7 @@ function getChillInstructions(level) {
   if (!effectiveLevel || effectiveLevel === 'off') return '';
 
   try {
-    return 'CHILL MODE ACTIVE — level: ' + effectiveLevel + '\n\n' +
+    return 'HOMIE MODE ACTIVE — level: ' + effectiveLevel + '\n\n' +
       filterSkillBodyForLevel(fs.readFileSync(SKILL_PATH, 'utf8'), effectiveLevel);
   } catch (e) {
     return getFallbackInstructions(effectiveLevel);

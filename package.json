@@ -1,5 +1,5 @@
 {
-  "name": "@prashanthgit19/chill",
+  "name": "@prashanthgit19/homie",
   "version": "0.1.0",
   "description": "Personality layer for coding agents. Same code, different voice: yo / dawg / mafa / off.",
   "keywords": [
@@ -15,18 +15,18 @@
     "name": "Prashanth K",
     "url": "https://github.com/prashanthgit19"
   },
-  "homepage": "https://github.com/prashanthgit19/chill",
+  "homepage": "https://github.com/prashanthgit19/homie",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/prashanthgit19/chill.git"
+    "url": "git+https://github.com/prashanthgit19/homie.git"
   },
   "bugs": {
-    "url": "https://github.com/prashanthgit19/chill/issues"
+    "url": "https://github.com/prashanthgit19/homie/issues"
   },
-  "main": "./.opencode/plugins/chill.mjs",
+  "main": "./.opencode/plugins/homie.mjs",
   "exports": {
-    ".": "./.opencode/plugins/chill.mjs",
-    "./plugin": "./.opencode/plugins/chill.mjs"
+    ".": "./.opencode/plugins/homie.mjs",
+    "./plugin": "./.opencode/plugins/homie.mjs"
   },
   "files": [
     "AGENTS.md",

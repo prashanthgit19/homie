@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "chill",
+  "name": "homie",
   "description": "Personality layer for coding agents. Same code, different voice.",
   "owner": {
     "name": "Prashanth K",
@@ -8,7 +8,7 @@
   },
   "plugins": [
     {
-      "name": "chill",
+      "name": "homie",
       "description": "Switches the agent's chat voice to a technically competent friend. Levels: yo, dawg, mafa, off.",
       "source": "./",
       "category": "productivity"

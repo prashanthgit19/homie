@@ -1,5 +1,5 @@
 'use strict';
-// Tests for hooks/chill-config.js
+// Tests for hooks/homie-config.js
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -7,29 +7,29 @@ const os = require('node:os');
 const path = require('node:path');
 
 // Isolate the config dir per test run via XDG_CONFIG_HOME so tests never
-// touch the real ~/.config/chill.
-const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chill-config-test-'));
+// touch the real ~/.config/homie.
+const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'homie-config-test-'));
 process.env.XDG_CONFIG_HOME = tmpRoot;
 
-const config = require('../hooks/chill-config');
+const config = require('../hooks/homie-config');
 
 test('default level is yo', () => {
-  delete process.env.CHILL_DEFAULT_LEVEL;
+  delete process.env.HOMIE_DEFAULT_LEVEL;
   assert.equal(config.getDefaultLevel(), 'yo');
 });
 
 test('env beats config file beats default', () => {
-  process.env.CHILL_DEFAULT_LEVEL = 'dawg';
+  process.env.HOMIE_DEFAULT_LEVEL = 'dawg';
   assert.equal(config.getDefaultLevel(), 'dawg');
-  delete process.env.CHILL_DEFAULT_LEVEL;
+  delete process.env.HOMIE_DEFAULT_LEVEL;
 });
 
 test('invalid env values fall through to config file', () => {
   fs.mkdirSync(config.getConfigDir(), { recursive: true });
   fs.writeFileSync(config.getConfigPath(), JSON.stringify({ defaultLevel: 'mafa' }));
-  process.env.CHILL_DEFAULT_LEVEL = 'banana';
+  process.env.HOMIE_DEFAULT_LEVEL = 'banana';
   assert.equal(config.getDefaultLevel(), 'mafa');
-  delete process.env.CHILL_DEFAULT_LEVEL;
+  delete process.env.HOMIE_DEFAULT_LEVEL;
 
   // config file beats default
   assert.equal(config.getDefaultLevel(), 'mafa');
@@ -66,19 +66,19 @@ test('BOM-prefixed config file parses', () => {
 });
 
 test('isDeactivationCommand: whole message only', () => {
-  assert.equal(config.isDeactivationCommand('stop chill'), true);
-  assert.equal(config.isDeactivationCommand('Stop Chill'), true);
-  assert.equal(config.isDeactivationCommand('stop chill.'), true);
-  assert.equal(config.isDeactivationCommand('stop chill? '), true);
-  assert.equal(config.isDeactivationCommand('chill off'), true);
-  assert.equal(config.isDeactivationCommand('please stop chill'), false);
-  assert.equal(config.isDeactivationCommand('add a stop chill button'), false);
+  assert.equal(config.isDeactivationCommand('stop homie'), true);
+  assert.equal(config.isDeactivationCommand('Stop Homie'), true);
+  assert.equal(config.isDeactivationCommand('stop homie.'), true);
+  assert.equal(config.isDeactivationCommand('stop homie? '), true);
+  assert.equal(config.isDeactivationCommand('homie off'), true);
+  assert.equal(config.isDeactivationCommand('please stop homie'), false);
+  assert.equal(config.isDeactivationCommand('add a stop homie button'), false);
   assert.equal(config.isDeactivationCommand(''), false);
 });
 
 test('isShellSafe allowlists ordinary path characters', () => {
-  assert.equal(config.isShellSafe('/home/me/.claude/chill-statusline.sh'), true);
-  assert.equal(config.isShellSafe('C:\\Users\\me\\chill-statusline.ps1'), true);
+  assert.equal(config.isShellSafe('/home/me/.claude/homie-statusline.sh'), true);
+  assert.equal(config.isShellSafe('C:\\Users\\me\\homie-statusline.ps1'), true);
   assert.equal(config.isShellSafe('/tmp/a path with spaces/x.sh'), true);
   assert.equal(config.isShellSafe('/tmp/e$(rm -rf)/x.sh'), false);
   assert.equal(config.isShellSafe('/tmp/`backtick`/x.sh'), false);

@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// chill — UserPromptSubmit hook: tracks which chill level is active.
-// Inspects user input for /chill commands and writes the level to the flag.
+// homie — UserPromptSubmit hook: tracks which homie level is active.
+// Inspects user input for /homie commands and writes the level to the flag.
 
-const { getDefaultLevel, writeDefaultLevel, isDeactivationCommand } = require('./chill-config');
+const { getDefaultLevel, writeDefaultLevel, isDeactivationCommand } = require('./homie-config');
 const {
   readLevel,
   setLevel,
   clearLevel,
   writeHookOutput,
-} = require('./chill-runtime');
-const { getChillInstructions } = require('./chill-instructions');
+} = require('./homie-runtime');
+const { getChillInstructions } = require('./homie-instructions');
 
 let input = '';
 let done = false;
@@ -22,10 +22,10 @@ function finish() {
     const data = JSON.parse(input.replace(/^\uFEFF/, ''));
     const prompt = (data.prompt || '').trim().toLowerCase();
 
-    // Match /chill commands
+    // Match /homie commands
     let levelSwitched = false;
     let deactivated = false;
-    if (/^[/@$]chill/.test(prompt)) {
+    if (/^[/@$]homie/.test(prompt)) {
       const parts = prompt.split(/\s+/);
       const cmd = parts[0].replace(/^[@$]/, '/');
       const arg = parts[1] || '';
@@ -33,8 +33,8 @@ function finish() {
       let level = null;
       let isReportOnly = false;
 
-      if (cmd === '/chill' || cmd === '/chill:chill') {
-        // `/chill default <level>` persists the default to config (survives
+      if (cmd === '/homie' || cmd === '/homie:homie') {
+        // `/homie default <level>` persists the default to config (survives
         // restarts). Plain switches stay session-scoped, so this is the only
         // path that writes config.
         if (arg === 'default') {
@@ -42,7 +42,7 @@ function finish() {
           if (dlevel === 'off' || dlevel === 'yo' || dlevel === 'dawg' || dlevel === 'mafa') {
             writeDefaultLevel(dlevel);
             writeHookOutput('UserPromptSubmit', dlevel,
-              'CHILL DEFAULT SET — new sessions start in ' + dlevel + '.');
+              'HOMIE DEFAULT SET — new sessions start in ' + dlevel + '.');
           }
           return; // don't fall through to the session-level switch
         }
@@ -51,7 +51,7 @@ function finish() {
         else if (arg === 'mafa') level = 'mafa';
         else if (arg === 'off') level = 'off';
         else if (arg === '') {
-          // Bare /chill: already on → keep the level, report it; off → turn
+          // Bare /homie: already on → keep the level, report it; off → turn
           // on at yo (bare activation is specified as yo in SKILL.md).
           const live = readLevel();
           if (live && live !== 'off') {
@@ -67,29 +67,29 @@ function finish() {
         writeHookOutput(
           'UserPromptSubmit',
           level,
-          'CHILL MODE ACTIVE — level: ' + level,
+          'HOMIE MODE ACTIVE — level: ' + level,
         );
       } else if (level && level !== 'off') {
         setLevel(level);
         levelSwitched = true;
         // Deliver the new level's ruleset along with the confirmation so the
         // switch turn itself is already in voice.
-        const header = 'CHILL MODE CHANGED — level: ' + level;
+        const header = 'HOMIE MODE CHANGED — level: ' + level;
         writeHookOutput('UserPromptSubmit', level, header + '\n\n' + getChillInstructions(level));
       } else if (level === 'off') {
         // Persist `off` like any level (plan lesson #7): clearing the flag
         // races the default logic — an absent flag reads as the default level.
         setLevel('off');
         deactivated = true;
-        writeHookOutput('UserPromptSubmit', 'off', 'CHILL MODE OFF');
+        writeHookOutput('UserPromptSubmit', 'off', 'HOMIE MODE OFF');
       }
     }
 
-    // Detect deactivation ("stop chill" as a whole message)
+    // Detect deactivation ("stop homie" as a whole message)
     if (!levelSwitched && !deactivated && isDeactivationCommand(prompt)) {
       setLevel('off');
       deactivated = true;
-      writeHookOutput('UserPromptSubmit', 'off', 'CHILL MODE OFF');
+      writeHookOutput('UserPromptSubmit', 'off', 'HOMIE MODE OFF');
     }
   } catch (e) {
     // Silent fail

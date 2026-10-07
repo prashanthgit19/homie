@@ -1,17 +1,17 @@
 'use strict';
-// Tests for hooks/chill-instructions.js
+// Tests for hooks/homie-instructions.js
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chill-instr-test-'));
+const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'homie-instr-test-'));
 process.env.XDG_CONFIG_HOME = tmpRoot;
 
 const { filterSkillBodyForLevel, getChillInstructions, getFallbackInstructions } =
-  require('../hooks/chill-instructions');
-const { normalizeLevel } = require('../hooks/chill-config');
+  require('../hooks/homie-instructions');
+const { normalizeLevel } = require('../hooks/homie-config');
 
 test('off produces no injection', () => {
   assert.equal(getChillInstructions('off'), '');
@@ -20,9 +20,9 @@ test('off produces no injection', () => {
 });
 
 test('header names the level', () => {
-  assert.ok(getChillInstructions('yo').startsWith('CHILL MODE ACTIVE — level: yo'));
-  assert.ok(getChillInstructions('dawg').startsWith('CHILL MODE ACTIVE — level: dawg'));
-  assert.ok(getChillInstructions('mafa').startsWith('CHILL MODE ACTIVE — level: mafa'));
+  assert.ok(getChillInstructions('yo').startsWith('HOMIE MODE ACTIVE — level: yo'));
+  assert.ok(getChillInstructions('dawg').startsWith('HOMIE MODE ACTIVE — level: dawg'));
+  assert.ok(getChillInstructions('mafa').startsWith('HOMIE MODE ACTIVE — level: mafa'));
 });
 
 test('yo output keeps only the yo row and yo example', () => {
@@ -74,14 +74,14 @@ test('label-free examples survive at every level', () => {
 
 test('frontmatter is stripped from injected body', () => {
   const out = getChillInstructions('yo');
-  assert.ok(!out.includes('---\nname: chill'));
+  assert.ok(!out.includes('---\nname: homie'));
   assert.ok(!out.startsWith('---'));
 });
 
 test('fallback instructions carry the level and core blocks', () => {
   for (const level of ['yo', 'dawg', 'mafa']) {
     const out = getFallbackInstructions(level);
-    assert.ok(out.includes('CHILL MODE ACTIVE — level: ' + level));
+    assert.ok(out.includes('HOMIE MODE ACTIVE — level: ' + level));
     assert.ok(out.includes('## The contract'));
     assert.ok(out.includes('## Where the voice lives'));
     assert.ok(out.includes('## Guardrails'));
