@@ -6,8 +6,8 @@
 // OpenCode all read one source of truth.
 //
 // Add to your opencode.json:
-//   { "plugins": ["@prashanthgit19/homie"] }
-// Or run: opencode plugin add @prashanthgit19/homie
+//   { "plugins": ["@kpnpm/homie"] }
+// Or run: opencode plugin add @kpnpm/homie
 
 import { createRequire } from 'node:module';
 import fs from 'node:fs';

@@ -63,13 +63,13 @@ Same four technical points every time. Only the voice changes.
 **OpenCode:**
 
 ```bash
-opencode plugin add @prashanthgit19/homie
+opencode plugin add @kpnpm/homie
 ```
 
 or in a project's `opencode.json`:
 
 ```json
-{ "plugins": ["@prashanthgit19/homie"] }
+{ "plugins": ["@kpnpm/homie"] }
 ```
 
 **Codex:**

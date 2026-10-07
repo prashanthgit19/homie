@@ -25,13 +25,13 @@ commands above into the prompt box.
 ## OpenCode
 
 ```bash
-opencode plugin add @prashanthgit19/homie
+opencode plugin add @kpnpm/homie
 ```
 
 Or add it to a project's `opencode.json`:
 
 ```json
-{ "plugins": ["@prashanthgit19/homie"] }
+{ "plugins": ["@kpnpm/homie"] }
 ```
 
 From a checkout instead (the plugin reuses `hooks/` and `skills/`):
@@ -100,7 +100,7 @@ The script is copied to your config dir so it survives plugin updates.
 |------|---------|
 | Claude Code | `/plugin remove homie` |
 | Codex | `codex plugin remove homie` |
-| OpenCode | `opencode plugin remove @prashanthgit19/homie` |
+| OpenCode | `opencode plugin remove @kpnpm/homie` |
 | Rules file | Delete the copied file |
 
 These remove the plugin's own files. Left behind (harmless): the level flag
