@@ -1,0 +1,125 @@
+'use strict';
+// Tests for hooks/chill-instructions.js
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
+const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chill-instr-test-'));
+process.env.XDG_CONFIG_HOME = tmpRoot;
+
+const { filterSkillBodyForLevel, getChillInstructions, getFallbackInstructions } =
+  require('../hooks/chill-instructions');
+const { normalizeLevel } = require('../hooks/chill-config');
+
+test('off produces no injection', () => {
+  assert.equal(getChillInstructions('off'), '');
+  assert.equal(getChillInstructions(null), '');
+  assert.equal(getChillInstructions('banana'), '');
+});
+
+test('header names the level', () => {
+  assert.ok(getChillInstructions('yo').startsWith('CHILL MODE ACTIVE — level: yo'));
+  assert.ok(getChillInstructions('dawg').startsWith('CHILL MODE ACTIVE — level: dawg'));
+  assert.ok(getChillInstructions('mafa').startsWith('CHILL MODE ACTIVE — level: mafa'));
+});
+
+test('yo output keeps only the yo row and yo example', () => {
+  const out = getChillInstructions('yo');
+  assert.ok(out.includes('| **yo** |'), 'yo table row survives');
+  assert.ok(!out.includes('| **dawg** |'), 'dawg row dropped');
+  assert.ok(!out.includes('| **mafa** |'), 'mafa row dropped');
+  assert.ok(/- yo: "/.test(out), 'yo example bullet survives');
+  assert.ok(!/- dawg: "/.test(out), 'dawg example dropped');
+  assert.ok(!/- mafa: "/.test(out), 'mafa example dropped');
+});
+
+test('mafa output keeps only the mafa row and mafa example', () => {
+  const out = getChillInstructions('mafa');
+  assert.ok(out.includes('| **mafa** |'));
+  assert.ok(!out.includes('| **yo** |'));
+  assert.ok(!out.includes('| **dawg** |'));
+  assert.ok(/- mafa: "/.test(out));
+  assert.ok(!/- yo: "/.test(out));
+});
+
+test('contract, voice-lives, guardrails, drop-the-bit survive at every level', () => {
+  for (const level of ['yo', 'dawg', 'mafa']) {
+    const out = getChillInstructions(level);
+    assert.ok(out.includes('## The contract'), level);
+    assert.ok(out.includes('## Where the voice lives'), level);
+    assert.ok(out.includes('## Guardrails'), level);
+    assert.ok(out.includes('## Drop the bit'), level);
+    assert.ok(out.includes('## Activation and persistence'), level);
+    assert.ok(out.includes('## Levels'), level);
+    assert.ok(out.includes('## Examples'), level);
+  }
+});
+
+test('non-level bullets are never dropped', () => {
+  const out = getChillInstructions('yo');
+  assert.ok(out.includes('- Roast decisions, never the person'), 'guardrail bullet survives');
+  assert.ok(!/- yo:\s*"/.test(out.replace(/- yo: "/, '')) || /- yo: "/.test(out));
+});
+
+test('label-free examples survive at every level', () => {
+  for (const level of ['yo', 'dawg', 'mafa']) {
+    const out = getChillInstructions(level);
+    assert.ok(out.includes('**Personality stays out of the artifact.**'), level);
+    assert.ok(out.includes('**Drop the bit.**'), level);
+    assert.ok(out.includes('fix(session): handle null user during token refresh'), level);
+  }
+});
+
+test('frontmatter is stripped from injected body', () => {
+  const out = getChillInstructions('yo');
+  assert.ok(!out.includes('---\nname: chill'));
+  assert.ok(!out.startsWith('---'));
+});
+
+test('fallback instructions carry the level and core blocks', () => {
+  for (const level of ['yo', 'dawg', 'mafa']) {
+    const out = getFallbackInstructions(level);
+    assert.ok(out.includes('CHILL MODE ACTIVE — level: ' + level));
+    assert.ok(out.includes('## The contract'));
+    assert.ok(out.includes('## Where the voice lives'));
+    assert.ok(out.includes('## Guardrails'));
+    assert.ok(out.includes('## Drop the bit'));
+    if (level === 'dawg') assert.ok(out.includes('damn, hell, crap'));
+  }
+});
+
+test('mafa-only profanity examples never reach yo or dawg context', () => {
+  for (const level of ['yo', 'dawg']) {
+    const out = getChillInstructions(level);
+    assert.ok(!out.includes('Bad mafa'), level);
+    assert.ok(!out.includes('Good mafa'), level);
+    assert.ok(!out.includes('fucking'), level);
+  }
+  // mafa keeps its own good/bad examples
+  const mafaOut = getChillInstructions('mafa');
+  assert.ok(mafaOut.includes('Bad mafa'));
+  assert.ok(mafaOut.includes('Good mafa'));
+  assert.ok(mafaOut.includes('One swear, where it counts'));
+});
+
+test('block-skip ends at the next bold header or section heading', () => {
+  const out = getChillInstructions('yo');
+  // The block after Bad/Good mafa is the label-free artifact example; it must
+  // survive at yo.
+  assert.ok(out.includes('**Personality stays out of the artifact.**'));
+  assert.ok(out.includes('fix(session): handle null user during token refresh'));
+  assert.ok(out.includes('**Drop the bit.**'));
+});
+
+test('filterSkillBodyForLevel passthrough for off', () => {
+  const body = '| **yo** | a |\n| **dawg** | b |\nplain line';
+  assert.equal(filterSkillBodyForLevel(body, 'off'), body);
+});
+
+test('after(() => cleanup)', () => {});
+
+test.after(() => {
+  fs.rmSync(tmpRoot, { recursive: true, force: true });
+});

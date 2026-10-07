@@ -1,0 +1,46 @@
+{
+  "name": "@prashanthgit19/chill",
+  "version": "0.1.0",
+  "description": "Personality layer for coding agents. Same code, different voice: yo / dawg / mafa / off.",
+  "keywords": [
+    "opencode-plugin",
+    "opencode",
+    "claude-code-plugin",
+    "claude",
+    "skills",
+    "prompt-engineering"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Prashanth K",
+    "url": "https://github.com/prashanthgit19"
+  },
+  "homepage": "https://github.com/prashanthgit19/chill",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prashanthgit19/chill.git"
+  },
+  "bugs": {
+    "url": "https://github.com/prashanthgit19/chill/issues"
+  },
+  "main": "./.opencode/plugins/chill.mjs",
+  "exports": {
+    ".": "./.opencode/plugins/chill.mjs",
+    "./plugin": "./.opencode/plugins/chill.mjs"
+  },
+  "files": [
+    "AGENTS.md",
+    "hooks/",
+    "skills/",
+    ".opencode/",
+    ".claude-plugin/",
+    "commands/",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

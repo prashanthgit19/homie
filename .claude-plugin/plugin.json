@@ -1,0 +1,11 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "chill",
+  "version": "0.1.0",
+  "description": "Personality layer for coding agents. Same code, different voice: yo / dawg / mafa / off.",
+  "author": {
+    "name": "Prashanth K",
+    "url": "https://github.com/prashanthgit19"
+  },
+  "hooks": "./hooks/claude-codex-hooks.json"
+}
