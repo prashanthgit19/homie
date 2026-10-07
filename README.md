@@ -141,10 +141,6 @@ touches code, commands, or safety judgment.
 response is normal; zero is always fine. Forced profanity is called out in
 the prompt as the main failure mode.
 
-**Does it work with [ponytail](https://github.com/DietrichGebert/ponytail)?**
-Yes, and they compose well: ponytail governs what gets built, homie governs
-how it's talked about. Different halves, no overlap.
-
 ## License
 
 [MIT](LICENSE)
