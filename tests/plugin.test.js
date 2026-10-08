@@ -57,7 +57,7 @@ test('skill and command are registered', async () => {
 
 test('/homie dawg replies one plain line, no ruleset dump', async () => {
   const text = await runCommand('dawg');
-  assert.equal(text, 'Homie mode: dawg.');
+  assert.equal(text, 'Aight, dawg mode.');
   assert.ok(!text.includes('# Homie'));
   assert.ok(!text.includes('HOMIE MODE ACTIVE'));
   assert.ok(!text.includes('## '));
@@ -65,7 +65,7 @@ test('/homie dawg replies one plain line, no ruleset dump', async () => {
 
 test('/homie off replies one line', async () => {
   const text = await runCommand('off');
-  assert.equal(text, 'Homie off.');
+  assert.equal(text, 'Homie off. Back to normal.');
 });
 
 test('unknown level replies one line, flag untouched', async () => {
@@ -76,10 +76,11 @@ test('unknown level replies one line, flag untouched', async () => {
   assert.equal(after, 'Homie mode: dawg.');
 });
 
-test('bare /homie while off turns on at yo', async () => {
+test('bare /homie while off turns on at the configured default (dawg)', async () => {
+  delete process.env.HOMIE_DEFAULT_LEVEL;
   await runCommand('off');
   const text = await runCommand('');
-  assert.equal(text, 'Homie mode: yo.');
+  assert.equal(text, 'Aight, dawg mode.');
 });
 
 test('bare /homie while active reports, flag untouched', async () => {

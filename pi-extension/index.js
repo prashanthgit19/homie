@@ -30,15 +30,15 @@ const HOMIE_COMMAND_DESCRIPTION =
 
 // Parse the argument string of `/homie ...`.
 //
-// Bare `/homie` turns the voice on at yo when it is off, and reports the
-// current level when it is already on — the SKILL.md contract, deliberately
-// not the configured default.
-export function parseHomieCommand(text, currentLevel = null) {
+// Bare `/homie` turns the voice on at the configured default when it is off,
+// and reports the current level when it is already on.
+export function parseHomieCommand(text, currentLevel = null, defaultLevel = DEFAULT_LEVEL) {
   const normalized = String(text || "").trim().toLowerCase();
 
   if (!normalized) {
     if (currentLevel && currentLevel !== "off") return { type: "report" };
-    return { type: "set-level", level: "yo" };
+    const preferred = normalizeLevel(defaultLevel) || DEFAULT_LEVEL;
+    return { type: "set-level", level: preferred === "off" ? DEFAULT_LEVEL : preferred };
   }
 
   const [primary, secondary] = normalized.split(/\s+/);
@@ -97,10 +97,20 @@ export default function homieExtension(pi) {
 
   const notify = (ctx, message, type = "info") => ctx?.ui?.notify?.(message, type);
 
+  // In-voice, one-line confirmations so the switch is audible immediately.
+  // Errors and bare-report stay plain.
+  function confirmLine(level) {
+    if (level === "off") return "Homie off. Back to normal.";
+    if (level === "yo") return "Aight, yo mode.";
+    if (level === "dawg") return "Aight, dawg mode.";
+    if (level === "mafa") return "Aight, mafa mode. No mercy.";
+    return `Homie mode: ${level}.`;
+  }
+
   pi.registerCommand("homie", {
     description: HOMIE_COMMAND_DESCRIPTION,
     handler: async (args, ctx) => {
-      const parsed = parseHomieCommand(args, currentLevel);
+      const parsed = parseHomieCommand(args, currentLevel, configuredDefault);
 
       if (parsed.type === "status") {
         notify(ctx, `Homie: current ${currentLevel} • default ${configuredDefault}`);
@@ -132,7 +142,7 @@ export default function homieExtension(pi) {
 
       if (parsed.type === "set-level") {
         setLevel(parsed.level, ctx);
-        notify(ctx, currentLevel === "off" ? "Homie off." : `Homie mode: ${currentLevel}.`);
+        notify(ctx, confirmLine(currentLevel));
         return;
       }
 
@@ -150,7 +160,7 @@ export default function homieExtension(pi) {
     const text = String(event?.text || "");
     if (currentLevel !== "off" && isDeactivationCommand(text)) {
       setLevel("off", ctx);
-      notify(ctx, "Homie off.");
+      notify(ctx, confirmLine("off"));
     }
   });
 

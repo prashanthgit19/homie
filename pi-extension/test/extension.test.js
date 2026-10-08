@@ -83,7 +83,7 @@ test("/homie <level> replies one plain line and persists a session entry", async
     });
     assert.equal(ctx.notifications.length, 1);
     const [note] = ctx.notifications;
-    assert.equal(note.text, "Homie mode: mafa.");
+    assert.equal(note.text, "Aight, mafa mode. No mercy.");
     // The visible reply must never carry the ruleset — that travels through
     // before_agent_start only.
     assert.ok(!note.text.includes("# Homie"));
@@ -99,23 +99,36 @@ test("/homie off replies one plain line and clears the status entry", async () =
 
     await commands.get("homie").handler("off", ctx);
 
-    assert.equal(ctx.notifications.at(-1).text, "Homie off.");
+    assert.equal(ctx.notifications.at(-1).text, "Homie off. Back to normal.");
     assert.deepEqual(ctx.statusWrites.at(-1), { key: "homie", text: undefined });
   });
 });
 
-test("bare /homie activates at yo when off (SKILL.md contract, not the default)", async () => {
+test("bare /homie activates at the configured default when off", async () => {
   await withTempConfig(async () => {
     process.env.HOMIE_DEFAULT_LEVEL = "mafa";
     const { commands, appendedEntries } = createPiHarness();
     const ctx = createCommandContext();
 
-    // Turn off, then a bare command must come back at yo — not the mafa default.
+    // Turn off, then a bare command must come back at the configured default.
     await commands.get("homie").handler("off", ctx);
     await commands.get("homie").handler("", ctx);
 
-    assert.equal(appendedEntries.at(-1).data.level, "yo");
-    assert.equal(ctx.notifications.at(-1).text, "Homie mode: yo.");
+    assert.equal(appendedEntries.at(-1).data.level, "mafa");
+    assert.equal(ctx.notifications.at(-1).text, "Aight, mafa mode. No mercy.");
+  });
+});
+
+test("bare /homie with an off default falls back to the built-in dawg", async () => {
+  await withTempConfig(async () => {
+    process.env.HOMIE_DEFAULT_LEVEL = "off";
+    const { commands, appendedEntries } = createPiHarness();
+    const ctx = createCommandContext();
+
+    await commands.get("homie").handler("off", ctx);
+    await commands.get("homie").handler("", ctx);
+
+    assert.equal(appendedEntries.at(-1).data.level, "dawg");
   });
 });
 
@@ -141,7 +154,7 @@ test("/homie status reports current and default", async () => {
     await commands.get("homie").handler("mafa", ctx);
     await commands.get("homie").handler("status", ctx);
 
-    assert.equal(ctx.notifications.at(-1).text, "Homie: current mafa • default yo");
+    assert.equal(ctx.notifications.at(-1).text, "Homie: current mafa • default dawg");
   });
 });
 
@@ -294,7 +307,7 @@ test("session_tree re-derives the level from the active branch without persistin
     branch = [];
     await events.get("session_tree")({ type: "session_tree" }, ctx);
     result = await events.get("before_agent_start")({ systemPrompt: "BASE" }, ctx);
-    assert.ok(result.systemPrompt.includes("level: yo"), "empty branch falls back to the default");
+    assert.ok(result.systemPrompt.includes("level: dawg"), "empty branch falls back to the default");
 
     assert.deepEqual(appendedEntries, [], "navigation must not append a mode entry");
     assert.equal(ctx.notifications.length, notificationCount, "navigation must not re-notify");
@@ -309,7 +322,7 @@ test("plain 'stop homie' / 'homie off' deactivates, and only as a whole message"
     // Whole-message "stop homie" deactivates.
     await commands.get("homie").handler("mafa", ctx);
     await events.get("input")({ text: "stop homie", source: "interactive" }, ctx);
-    assert.equal(ctx.notifications.at(-1).text, "Homie off.");
+    assert.equal(ctx.notifications.at(-1).text, "Homie off. Back to normal.");
     let result = await events.get("before_agent_start")({ systemPrompt: "BASE" }, ctx);
     assert.equal(result, undefined);
 

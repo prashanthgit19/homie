@@ -13,9 +13,9 @@ process.env.XDG_CONFIG_HOME = tmpRoot;
 
 const config = require('../hooks/homie-config');
 
-test('default level is yo', () => {
+test('default level is dawg', () => {
   delete process.env.HOMIE_DEFAULT_LEVEL;
-  assert.equal(config.getDefaultLevel(), 'yo');
+  assert.equal(config.getDefaultLevel(), 'dawg');
 });
 
 test('env beats config file beats default', () => {
@@ -36,7 +36,7 @@ test('invalid env values fall through to config file', () => {
 
   // invalid config value falls through to default
   fs.writeFileSync(config.getConfigPath(), JSON.stringify({ defaultLevel: 'nope' }));
-  assert.equal(config.getDefaultLevel(), 'yo');
+  assert.equal(config.getDefaultLevel(), 'dawg');
 });
 
 test('normalizeLevel trims, case-folds, rejects unknown', () => {

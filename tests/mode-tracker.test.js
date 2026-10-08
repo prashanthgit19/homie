@@ -55,11 +55,12 @@ test('/homie mafa persists the level and emits the new ruleset', async () => {
   assert.ok(stdout.includes('HOMIE MODE ACTIVE — level: mafa') || stdout.includes('| **mafa** |'));
 });
 
-test('bare /homie while off turns on at yo', async () => {
+test('bare /homie while off turns on at the configured default (dawg)', async () => {
+  delete process.env.HOMIE_DEFAULT_LEVEL; // built-in default is dawg
   runtime.setLevel('off'); // off is persisted like any level
   const { stdout } = await runTracker({ prompt: '/homie' });
-  assert.equal(readFlag(), 'yo');
-  assert.ok(stdout.includes('HOMIE MODE CHANGED — level: yo'));
+  assert.equal(readFlag(), 'dawg');
+  assert.ok(stdout.includes('HOMIE MODE CHANGED — level: dawg'));
 });
 
 test('bare /homie while active reports the level, flag untouched', async () => {
@@ -95,13 +96,22 @@ test('"add a stop homie button" does NOT deactivate', async () => {
   runtime.setLevel('mafa');
   const { stdout } = await runTracker({ prompt: 'add a stop homie button' });
   assert.equal(readFlag(), 'mafa');
-  assert.equal(stdout, '');
+  // Not a deactivation: the ordinary-turn recency nudge fires instead.
+  assert.ok(stdout.includes('HOMIE ACTIVE — level mafa'));
 });
 
-test('plain requests ("be blunter") do not touch the flag', async () => {
+test('plain requests ("be blunter") do not touch the flag but get the recency nudge', async () => {
   runtime.setLevel('yo');
   const { stdout } = await runTracker({ prompt: 'be blunter' });
   assert.equal(readFlag(), 'yo');
+  assert.ok(stdout.includes('HOMIE ACTIVE — level yo'));
+  assert.ok(stdout.includes('every reply in this voice'));
+});
+
+test('no recency nudge while off', async () => {
+  runtime.setLevel('off');
+  const { stdout } = await runTracker({ prompt: 'just a normal request' });
+  assert.equal(readFlag(), 'off');
   assert.equal(stdout, '');
 });
 

@@ -1,6 +1,6 @@
 {
   "name": "@kpnpm/homie",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Personality layer for coding agents. Same code, different voice: yo / dawg / mafa / off.",
   "keywords": [
     "opencode-plugin",
@@ -39,6 +39,7 @@
     "commands/",
     "pi-extension/",
     "!pi-extension/test/",
+    "scripts/tone-check.js",
     "LICENSE"
   ],
   "pi": {

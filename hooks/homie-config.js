@@ -7,16 +7,16 @@
 //      - $XDG_CONFIG_HOME/homie/config.json (any platform, if set)
 //      - ~/.config/homie/config.json (macOS / Linux fallback)
 //      - %APPDATA%\homie\config.json (Windows fallback)
-//   3. 'yo'
+//   3. 'dawg'
 //
-// Bare /homie always activates at yo (per SKILL.md); the configured default
-// governs what a NEW SESSION starts at.
+// Bare /homie turns the voice on at the configured default; the configured
+// default also governs what a NEW SESSION starts at.
 
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const DEFAULT_LEVEL = 'yo';
+const DEFAULT_LEVEL = 'dawg';
 const RUNTIME_LEVELS = ['off', 'yo', 'dawg', 'mafa'];
 
 function normalizeLevel(level) {

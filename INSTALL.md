@@ -97,9 +97,10 @@ Default level for every new session:
 - or `~/.config/homie/config.json` (`%APPDATA%\homie\config.json` on Windows):
 
 ```json
-{ "defaultLevel": "yo" }
+{ "defaultLevel": "dawg" }
 ```
 
+Built-in default is **dawg**. Set `yo` for the clean, no-profanity voice.
 `/homie default <level>` writes this for you.
 
 ## Statusline badge (Claude Code)

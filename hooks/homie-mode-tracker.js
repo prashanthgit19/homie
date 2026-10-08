@@ -2,7 +2,12 @@
 // homie — UserPromptSubmit hook: tracks which homie level is active.
 // Inspects user input for /homie commands and writes the level to the flag.
 
-const { getDefaultLevel, writeDefaultLevel, isDeactivationCommand } = require('./homie-config');
+const {
+  DEFAULT_LEVEL,
+  getDefaultLevel,
+  writeDefaultLevel,
+  isDeactivationCommand,
+} = require('./homie-config');
 const {
   readLevel,
   setLevel,
@@ -51,13 +56,16 @@ function finish() {
         else if (arg === 'off') level = 'off';
         else if (arg === '') {
           // Bare /homie: already on → keep the level, report it; off → turn
-          // on at yo (bare activation is specified as yo in SKILL.md).
+          // on at the configured default (dawg out of the box). If the
+          // configured default is itself off, fall back to the built-in
+          // default so a bare command always activates.
           const live = readLevel();
           if (live && live !== 'off') {
             isReportOnly = true;
             level = live;
           } else {
-            level = 'yo';
+            const preferred = getDefaultLevel();
+            level = preferred === 'off' ? DEFAULT_LEVEL : preferred;
           }
         }
       }
@@ -89,6 +97,23 @@ function finish() {
       setLevel('off');
       deactivated = true;
       writeHookOutput('UserPromptSubmit', 'off', 'HOMIE MODE OFF');
+    }
+
+    // Recency nudge: on an ordinary turn (no /homie command, no deactivation),
+    // re-assert the active voice in one short hidden line. The full ruleset is
+    // injected once at SessionStart; by mid-session it is buried under the
+    // transcript and the model drifts back to its assistant persona. This keeps
+    // the voice in recent context without re-dumping the ruleset. off = silence.
+    if (!levelSwitched && !deactivated && !/^[/@$]homie/.test(prompt)) {
+      const live = readLevel();
+      if (live && live !== 'off') {
+        writeHookOutput(
+          'UserPromptSubmit',
+          live,
+          'HOMIE ACTIVE — level ' + live +
+          ' — every reply in this voice, no assistant polish.',
+        );
+      }
     }
   } catch (e) {
     // Silent fail

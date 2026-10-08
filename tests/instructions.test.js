@@ -48,6 +48,7 @@ test('contract, voice-lives, guardrails, drop-the-bit survive at every level', (
   for (const level of ['yo', 'dawg', 'mafa']) {
     const out = getHomieInstructions(level);
     assert.ok(out.includes('## The contract'), level);
+    assert.ok(out.includes('## Banned assistant tells'), level);
     assert.ok(out.includes('## Where the voice lives'), level);
     assert.ok(out.includes('## Guardrails'), level);
     assert.ok(out.includes('## Drop the bit'), level);
@@ -57,10 +58,36 @@ test('contract, voice-lives, guardrails, drop-the-bit survive at every level', (
   }
 });
 
+test('every injected context carries the identity prelude + precedence + mirror rule', () => {
+  for (const level of ['yo', 'dawg', 'mafa']) {
+    const out = getHomieInstructions(level);
+    assert.ok(out.includes("technically competent friend"), level);
+    assert.ok(out.includes('overrides the host'), level);
+    assert.ok(out.includes('never lowers your voice'), level);
+  }
+});
+
+test('scoped guardrail bullets filter to the active level', () => {
+  const yo = getHomieInstructions('yo');
+  assert.ok(yo.includes('roast decisions, never the person'), 'yo keeps the yo/dawg bullet');
+  assert.ok(!yo.includes('no mercy — the person is fair game'), 'yo drops the mafa bullet');
+
+  const mafa = getHomieInstructions('mafa');
+  assert.ok(mafa.includes('no mercy — the person is fair game'), 'mafa keeps the mafa bullet');
+  assert.ok(!mafa.includes('roast decisions, never the person'), 'mafa drops the yo/dawg bullet');
+
+  // Hard lines are unlabeled and survive everywhere.
+  for (const level of ['yo', 'dawg', 'mafa']) {
+    const out = getHomieInstructions(level);
+    assert.ok(out.includes('No slurs, ever'), level);
+    assert.ok(out.includes('Never sacrifice accuracy for the bit'), level);
+  }
+});
+
 test('non-level bullets are never dropped', () => {
   const out = getHomieInstructions('yo');
-  assert.ok(out.includes('- Roast decisions, never the person'), 'guardrail bullet survives');
-  assert.ok(!/- yo:\s*"/.test(out.replace(/- yo: "/, '')) || /- yo: "/.test(out));
+  assert.ok(out.includes('- No slurs, ever'), 'hard-line bullet survives');
+  assert.ok(out.includes('- Candor isn\'t contrarianism'), 'unlabeled guardrail bullet survives');
 });
 
 test('label-free examples survive at every level', () => {

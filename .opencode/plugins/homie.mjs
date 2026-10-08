@@ -20,7 +20,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // The shared instruction builder is CommonJS; bridge to it from this ES module.
 const require = createRequire(import.meta.url);
 const { getHomieInstructions } = require('../../hooks/homie-instructions');
-const { getDefaultLevel, normalizeLevel, writeDefaultLevel } = require('../../hooks/homie-config');
+const {
+  DEFAULT_LEVEL,
+  getDefaultLevel,
+  normalizeLevel,
+  writeDefaultLevel,
+} = require('../../hooks/homie-config');
 
 // OpenCode has no flag-file convention of its own; keep the level beside its config.
 const statePath = path.join(
@@ -45,14 +50,33 @@ function writeLevel(level) {
 // Returns the applied level, null for an unrecognized level, or undefined
 // when nothing changed (bare /homie while already on → report-only).
 // `off` is persisted like any level; the context hook reads it and stays
-// silent. Bare /homie turns the voice on at yo (per SKILL.md).
+// silent. Bare /homie turns the voice on at the configured default (dawg out
+// of the box); if the configured default is itself off, it turns on at the
+// built-in default so a bare command always activates.
 function persistLevel(args) {
   const wanted = String(args == null ? '' : args).trim();
   if (!wanted && readLevel() !== 'off') return undefined;
-  const level = wanted ? normalizeLevel(wanted) : 'yo';
+  let level;
+  if (wanted) {
+    level = normalizeLevel(wanted);
+  } else {
+    const preferred = getDefaultLevel();
+    level = preferred === 'off' ? DEFAULT_LEVEL : preferred;
+  }
   if (!level) return null;
   writeLevel(level);
   return level;
+}
+
+// In-voice, one-line confirmations. `off` and bare-report stay plain-ish; the
+// point is the user hears the voice the moment they switch. Error/warning
+// replies stay fully plain (see the command handler).
+function confirmLine(level) {
+  if (level === 'off') return 'Homie off. Back to normal.';
+  if (level === 'yo') return 'Aight, yo mode.';
+  if (level === 'dawg') return 'Aight, dawg mode.';
+  if (level === 'mafa') return 'Aight, mafa mode. No mercy.';
+  return 'Homie mode: ' + level + '.';
 }
 
 function readSkill() {
@@ -106,10 +130,11 @@ export default {
             const level = readLevel();
             if (first && applied === null) {
               text = 'Unknown level "' + first + '". Levels: off, yo, dawg, mafa.';
-            } else if (level === 'off') {
-              text = 'Homie off.';
-            } else {
+            } else if (applied === undefined) {
+              // Bare /homie while already on: report, change nothing.
               text = 'Homie mode: ' + level + '.';
+            } else {
+              text = confirmLine(level);
             }
           }
 

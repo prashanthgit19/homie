@@ -11,14 +11,19 @@ import {
   writeDefaultLevel,
 } from "../index.js";
 
-test("parseHomieCommand activates bare at yo when off", () => {
-  assert.deepEqual(parseHomieCommand("", "off"), { type: "set-level", level: "yo" });
-  assert.deepEqual(parseHomieCommand("", null), { type: "set-level", level: "yo" });
+test("parseHomieCommand activates bare at the configured default when off", () => {
+  // No explicit default → built-in default (dawg).
+  assert.deepEqual(parseHomieCommand("", "off"), { type: "set-level", level: "dawg" });
+  assert.deepEqual(parseHomieCommand("", null), { type: "set-level", level: "dawg" });
+  // Configured default wins.
+  assert.deepEqual(parseHomieCommand("", "off", "mafa"), { type: "set-level", level: "mafa" });
+  // An off default falls back to the built-in default so bare always activates.
+  assert.deepEqual(parseHomieCommand("", "off", "off"), { type: "set-level", level: "dawg" });
 });
 
 test("parseHomieCommand reports instead of resetting when already active", () => {
-  assert.deepEqual(parseHomieCommand("", "yo", "mafa"), { type: "report" });
-  assert.deepEqual(parseHomieCommand("", "yo", "dawg"), { type: "report" });
+  assert.deepEqual(parseHomieCommand("", "mafa", "dawg"), { type: "report" });
+  assert.deepEqual(parseHomieCommand("", "dawg", "dawg"), { type: "report" });
 });
 
 test("parseHomieCommand parses levels, status, and default subcommand", () => {
@@ -77,7 +82,7 @@ test("resolveSessionLevel honors off and falls back on junk input", () => {
   assert.equal(resolveSessionLevel({}, "yo"), "yo");
   assert.equal(resolveSessionLevel("not an array", "yo"), "yo");
   // An unrecognized fallback degrades to the built-in default, never a bogus level.
-  assert.equal(resolveSessionLevel([], "banana"), "yo");
+  assert.equal(resolveSessionLevel([], "banana"), "dawg");
 });
 
 test("readDefaultLevel and writeDefaultLevel use the XDG config path", () => {
@@ -89,7 +94,7 @@ test("readDefaultLevel and writeDefaultLevel use the XDG config path", () => {
   delete process.env.HOMIE_DEFAULT_LEVEL;
 
   try {
-    assert.equal(readDefaultLevel(), "yo");
+    assert.equal(readDefaultLevel(), "dawg");
     assert.equal(writeDefaultLevel("mafa"), "mafa");
     assert.equal(readDefaultLevel(), "mafa");
     assert.ok(existsSync(configPath));

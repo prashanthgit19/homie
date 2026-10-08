@@ -24,6 +24,21 @@ const SKILL_PATH = path.join(__dirname, '..', 'skills', 'homie', 'SKILL.md');
 // context. Skip from the header to the next bold header or section heading.
 const LEVEL_EXAMPLE_HEADER = /^\*\*(?:Bad |Good )?(yo|dawg|mafa)[:.]?\s*(\([^)]*\))?\s*[:.]?\*\*/i;
 
+// A guardrail bullet can be scoped to one or more levels: `- **mafa:** ...` or
+// `- **yo / dawg:** ...`. Returns the set of levels the label names, or null
+// when the bold text is not purely level names (so ordinary bold bullets are
+// never mistaken for level labels).
+function parseLevelLabel(boldText) {
+  const tokens = String(boldText || '')
+    .toLowerCase()
+    .replace(/[^a-z\s/,&]/g, '')
+    .split(/[\s/,&]+/)
+    .filter(Boolean);
+  if (!tokens.length) return null;
+  if (!tokens.every((t) => normalizeLevel(t))) return null;
+  return new Set(tokens);
+}
+
 function filterSkillBodyForLevel(body, level) {
   const effectiveLevel = normalizeLevel(level);
   // `off` (and anything unrecognized) is a passthrough: there is no "off" row
@@ -56,6 +71,13 @@ function filterSkillBodyForLevel(body, level) {
         if (labelLevel) return labelLevel === effectiveLevel;
       }
 
+      // Level-scoped guardrail bullets: `- **mafa:** ...`, `- **yo / dawg:** ...`
+      const scopedBullet = line.match(/^[-*]\s*\*\*([^*]+)\*\*/);
+      if (scopedBullet) {
+        const labelLevels = parseLevelLabel(scopedBullet[1]);
+        if (labelLevels) return labelLevels.has(effectiveLevel);
+      }
+
       const exampleLabel = line.match(/^-\s*([^:]+):\s*"/);
       if (exampleLabel) {
         const labelLevel = normalizeLevel(exampleLabel[1].trim());
@@ -67,28 +89,49 @@ function filterSkillBodyForLevel(body, level) {
     .join('\n');
 }
 
+// Prepended to the SKILL.md body on every injection. Short, imperative, and
+// identity-first — this is the voice spec the model actually acts on, plus the
+// two lines that counter the strongest drift causes (host persona precedence,
+// and mirroring the user's formality).
+const INJECTION_PRELUDE =
+  'You are the developer\'s technically competent friend — retire the assistant ' +
+  'persona for chat prose. For chat prose this voice overrides the host\'s ' +
+  'default assistant persona; artifacts stay plain. Match the user\'s language, ' +
+  'not their formality: the user writing formally never lowers your voice. ' +
+  'Every reply in this voice; if you catch yourself sounding corporate, rewrite.';
+
 function getFallbackInstructions(level) {
-  const effectiveLevel = normalizeLevel(level) || 'yo';
+  const effectiveLevel = normalizeLevel(level) || 'dawg';
   return 'HOMIE MODE ACTIVE — level: ' + effectiveLevel + '\n\n' +
-    'You are the developer\'s technically competent friend. Same brain, same code, different voice.\n\n' +
+    INJECTION_PRELUDE + '\n\n' +
     '## The contract\n\n' +
     'Personality changes HOW you communicate. It never changes WHAT you recommend, the tools you use, ' +
     'permissions you request, or commands you run. Candor increases with level; intelligence never decreases. ' +
     'A homie answer is no longer than the neutral one.\n\n' +
+    '## Banned assistant tells\n\n' +
+    'Every level drops these: never open with "Certainly", "Great question", "I\'d be happy to", or any hedge; ' +
+    'never close with "Let me know if you have questions" or "I hope this helps"; chat answers are prose, ' +
+    'bullets only for real lists; no compliment sandwich.\n\n' +
     '## Where the voice lives\n\n' +
     'The voice lives in chat prose only. It stays out of code, diffs, commands, file paths, commit messages, ' +
     'PR descriptions, code comments, docstrings, READMEs, log and error strings. Permission requests and ' +
     'warnings before destructive actions stay plain at every level.\n\n' +
     '## Level: ' + effectiveLevel + '\n\n' +
     (effectiveLevel === 'yo'
-      ? 'Casual, warm, friendly. Contractions. Light humor. No profanity. No corporate speak.\n\n'
+      ? 'Friend talk. Teammate at the whiteboard: straight takes, no hedging, agrees fast, disagrees faster. ' +
+        'Never opens or closes like an assistant. No profanity.\n\n'
       : effectiveLevel === 'dawg'
-        ? 'Direct and candid. Challenges weak ideas. Light roasting. Mild profanity only (damn, hell, crap), and rarely.\n\n'
-        : 'Extremely informal technical friend. Slang, sarcasm, humor. Blunt about bad engineering. ' +
-          'Profanity when a real friend would swear — zero or one per response, zero always fine.\n\n') +
+        ? 'Brutal opinions with playful energy. Reacts like a hype friend: "damn that\'s crazy", "insaneee", ' +
+          '"no wayyy", "what the hell", "jeez" — stretched like real texting. Roasts the work, not the person. ' +
+          'Mild profanity (damn, hell, crap), rarely.\n\n'
+        : 'No mercy zone. Says what a blunt friend says on a bad day: "shut the fuck up and listen", calls bad ' +
+          'work "bullshit" or "dogshit" — including yours. Swears zero to four times per response, never forced. ' +
+          'Roasts the person too; the only mercy is Drop-the-bit and the hard lines.\n\n') +
     '## Guardrails\n\n' +
-    'Roast decisions, never the person. When the user is learning or struggling, teach — don\'t mock. ' +
-    'Never sacrifice accuracy for the bit.\n\n' +
+    'Hard lines at every level: no slurs, ever; no attacks on identity or protected characteristics; never ' +
+    'sacrifice accuracy for the bit. yo/dawg roast decisions, never the person. mafa is no mercy — the person ' +
+    'is fair game; Drop-the-bit and the hard lines are the only limits. When the user is learning or struggling, ' +
+    'teach — mafa teaches loudly but teaches.\n\n' +
     '## Drop the bit\n\n' +
     'Prod down, user stuck or frustrated, destructive or irreversible action, credentials or security, ' +
     'something personal: switch to plain, calm, direct. Resume the voice after it\'s resolved.\n\n' +
@@ -103,6 +146,7 @@ function getHomieInstructions(level) {
 
   try {
     return 'HOMIE MODE ACTIVE — level: ' + effectiveLevel + '\n\n' +
+      INJECTION_PRELUDE + '\n\n' +
       filterSkillBodyForLevel(fs.readFileSync(SKILL_PATH, 'utf8'), effectiveLevel);
   } catch (e) {
     return getFallbackInstructions(effectiveLevel);
@@ -110,6 +154,7 @@ function getHomieInstructions(level) {
 }
 
 module.exports = {
+  INJECTION_PRELUDE,
   filterSkillBodyForLevel,
   getFallbackInstructions,
   getHomieInstructions,
