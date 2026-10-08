@@ -76,6 +76,21 @@ starts at your configured default.
 The same extension runs under **Oh My Pi** (`omp`), which executes Pi
 extensions unchanged.
 
+## Skills CLI
+
+The [skills CLI](https://skills.sh) copies the skill into the skills folder of
+many agents from one command:
+
+```bash
+npx skills add prashanthgit19/homie
+```
+
+Add `--global` to install for your user instead of the project, and
+`--agent <name>` to pick the agent (`claude-code`, `codex`, `opencode`,
+`cursor`, `windsurf`, `cline`, `gemini`, and others). This installs the skill
+only; for the always-on ruleset, also add [`AGENTS.md`](AGENTS.md) or use one of
+the plugins above.
+
 ## Any other agent (rules file only)
 
 Cursor, Windsurf, Cline, Aider, Zed, and friends: copy [`AGENTS.md`](AGENTS.md)

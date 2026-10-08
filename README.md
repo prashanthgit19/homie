@@ -125,7 +125,14 @@ Also works for Oh My Pi (`omp`), which runs Pi extensions unchanged.
 <details open>
 <summary><strong>Any other agent</strong></summary>
 
-Copy [`AGENTS.md`](AGENTS.md) into your project, or ask your agent to install
+One command copies the skill into most agents' skills folders (Claude Code,
+Codex, OpenCode, Cursor, Windsurf, Cline, Gemini, and more):
+
+```bash
+npx skills add prashanthgit19/homie
+```
+
+Or copy [`AGENTS.md`](AGENTS.md) into your project, or ask your agent to install
 [`skills/homie/SKILL.md`](skills/homie/SKILL.md) as a skill. More in
 [INSTALL.md](INSTALL.md).
 
