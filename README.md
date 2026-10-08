@@ -1,6 +1,10 @@
-# homie
+<p align="center">
+  <img src="docs/logo.svg" alt="homie" width="96" height="96">
+</p>
 
-*Same brain. Same code. Different voice.*
+<h1 align="center">homie</h1>
+
+<p align="center"><em>Same brain. Same code. Different voice.</em></p>
 
 Your coding agent didn't need another corporate assistant. **homie** switches
 its chat voice to a technically competent friend — in three levels:
@@ -11,10 +15,12 @@ its chat voice to a technically competent friend — in three levels:
 | 😏 **dawg** | Brutal opinions with playful energy. Reacts like a hype friend: "damn that's crazy", "insaneee", "no wayyy", "what the hell", "jeez". Roasts the work, not you. Mild swearing (damn, hell, crap), rarely. |
 | 💀 **mafa** | No mercy zone. Says what a blunt friend says on a bad day: "shut up and listen", calls bad work "bullshit" or "dogshit" — including yours. Swears zero to four times per response, never forced. Roasts the person too. |
 
+> [!NOTE]
 > **Default is dawg.** Out of the box homie is blunt with mild swearing. Want
 > the clean voice? `/homie default yo`, or set `HOMIE_DEFAULT_LEVEL=yo`.
 
-> ⚠️ **mafa has no mercy.** It will call your architecture dogshit and may
+> [!CAUTION]
+> **mafa has no mercy.** It will call your architecture dogshit and may
 > tell you to shut up and listen — that's the product, not a bug. What it never
 > does: slurs, attacks on who you are, or mocking someone genuinely stuck. It
 > still drops the bit when things get real. Opting into mafa is opting into a
@@ -60,7 +66,10 @@ Same four technical points every time. Only the voice changes.
 
 ## Install
 
-**Claude Code:**
+Choose your agent:
+
+<details open>
+<summary><strong>Claude Code</strong></summary>
 
 ```
 /plugin marketplace add prashanthgit19/homie
@@ -72,7 +81,10 @@ Same four technical points every time. Only the voice changes.
 
 (two separate prompts)
 
-**OpenCode:**
+</details>
+
+<details open>
+<summary><strong>OpenCode</strong></summary>
 
 ```bash
 opencode plugin add @kpnpm/homie
@@ -84,7 +96,10 @@ or in a project's `opencode.json`:
 { "plugins": ["@kpnpm/homie"] }
 ```
 
-**Codex:**
+</details>
+
+<details open>
+<summary><strong>Codex</strong></summary>
 
 ```bash
 codex plugin marketplace add prashanthgit19/homie
@@ -94,7 +109,10 @@ codex plugin add homie@homie
 Then open `/hooks` in Codex, trust the two lifecycle hooks, and start a new
 thread.
 
-**Pi (pi.dev):**
+</details>
+
+<details open>
+<summary><strong>Pi (pi.dev)</strong></summary>
 
 ```bash
 pi install npm:@kpnpm/homie
@@ -102,9 +120,16 @@ pi install npm:@kpnpm/homie
 
 Also works for Oh My Pi (`omp`), which runs Pi extensions unchanged.
 
-**Any other agent:** copy [`AGENTS.md`](AGENTS.md) into your project, or ask
-your agent to install [`skills/homie/SKILL.md`](skills/homie/SKILL.md) as a
-skill. More in [INSTALL.md](INSTALL.md).
+</details>
+
+<details open>
+<summary><strong>Any other agent</strong></summary>
+
+Copy [`AGENTS.md`](AGENTS.md) into your project, or ask your agent to install
+[`skills/homie/SKILL.md`](skills/homie/SKILL.md) as a skill. More in
+[INSTALL.md](INSTALL.md).
+
+</details>
 
 ## Commands
 

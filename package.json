@@ -41,6 +41,7 @@
     "!pi-extension/test/",
     "scripts/tone-check.js",
     "scripts/tone-run.sh",
+    "docs/logo.svg",
     "LICENSE"
   ],
   "pi": {
