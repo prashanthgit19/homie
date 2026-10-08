@@ -1,6 +1,6 @@
 {
   "name": "@kpnpm/homie",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Personality layer for coding agents. Same code, different voice: yo / dawg / mafa / off.",
   "keywords": [
     "opencode-plugin",
