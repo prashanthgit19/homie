@@ -55,6 +55,27 @@ codex plugin add homie@homie
 Run `codex` and open `/hooks`, review and trust its two lifecycle hooks, and
 start a new thread.
 
+## Pi (pi.dev)
+
+```bash
+pi install npm:@kpnpm/homie
+```
+
+or from git:
+
+```bash
+pi install git:github.com/prashanthgit19/homie
+```
+
+Start `pi` in your project. The extension registers `/homie`, injects the
+ruleset into the system prompt before every model call, and shows the active
+level in the status bar (`homie: dawg`). Levels are stored in session entries,
+so they are scoped to the session and follow branch navigation; a new session
+starts at your configured default.
+
+The same extension runs under **Oh My Pi** (`omp`), which executes Pi
+extensions unchanged.
+
 ## Any other agent (rules file only)
 
 Cursor, Windsurf, Cline, Aider, Zed, and friends: copy [`AGENTS.md`](AGENTS.md)
@@ -100,6 +121,7 @@ The script is copied to your config dir so it survives plugin updates.
 |------|---------|
 | Claude Code | `/plugin remove homie` |
 | Codex | `codex plugin remove homie` |
+| Pi | `pi remove homie` |
 | OpenCode | `opencode plugin remove @kpnpm/homie` |
 | Rules file | Delete the copied file |
 

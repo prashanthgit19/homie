@@ -82,6 +82,14 @@ codex plugin add homie@homie
 Then open `/hooks` in Codex, trust the two lifecycle hooks, and start a new
 thread.
 
+**Pi (pi.dev):**
+
+```bash
+pi install npm:@kpnpm/homie
+```
+
+Also works for Oh My Pi (`omp`), which runs Pi extensions unchanged.
+
 **Any other agent:** copy [`AGENTS.md`](AGENTS.md) into your project, or ask
 your agent to install [`skills/homie/SKILL.md`](skills/homie/SKILL.md) as a
 skill. More in [INSTALL.md](INSTALL.md).
@@ -100,7 +108,11 @@ down one. "stop homie" turns it off.
 
 Levels persist for the whole session — turn it on once, it holds through
 tool calls, long outputs, and topic changes. New sessions start at your
-configured default (**yo** out of the box).
+configured default (**yo** out of the box); in Pi the level is scoped to the
+session and follows branch navigation, while OpenCode keeps the last level you
+set across sessions. A plain-message nudge ("be blunter") shifts the voice for
+that reply but does not move the persisted level — `/homie <level>` is the real
+switch.
 
 ## Settings
 
@@ -127,6 +139,7 @@ loaded every turn:
 
 - **Claude Code / Codex:** `SessionStart` injects the ruleset; `UserPromptSubmit` tracks `/homie` switches mid-session.
 - **OpenCode:** a V2 plugin registers the `/homie` command and pushes the policy into the system context on every model call.
+- **Pi (pi.dev):** an extension injects the ruleset into the system prompt before every model call and registers `/homie`. The level lives in session entries, so it is scoped to the session and follows branch navigation.
 - **Others:** the `AGENTS.md` rules file.
 
 Subagents don't get the voice — subagent prose isn't user-facing.

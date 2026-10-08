@@ -1,12 +1,14 @@
 {
   "name": "@kpnpm/homie",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Personality layer for coding agents. Same code, different voice: yo / dawg / mafa / off.",
   "keywords": [
     "opencode-plugin",
     "opencode",
     "claude-code-plugin",
     "claude",
+    "pi",
+    "pi-package",
     "skills",
     "prompt-engineering"
   ],
@@ -35,10 +37,20 @@
     ".opencode/",
     ".claude-plugin/",
     "commands/",
+    "pi-extension/",
+    "!pi-extension/test/",
     "LICENSE"
   ],
+  "pi": {
+    "extensions": [
+      "./pi-extension/index.js"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
   "scripts": {
-    "test": "node --test \"tests/*.test.js\""
+    "test": "node --test \"tests/*.test.js\" && npm test --prefix pi-extension"
   },
   "publishConfig": {
     "access": "public"
