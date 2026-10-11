@@ -24,6 +24,8 @@ LEVELS=(dawg mafa)
 PROMPT=""
 RECORD=""
 SELF="$0"
+[ -f "$SELF" ] && SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+ORIG_ARGS=("$@")
 
 usage() {
   # Print the leading comment block (skip shebang, stop at first non-comment).
@@ -71,16 +73,21 @@ if [ -n "$RECORD" ] && [ "${HOMIE_DEMO_RECORDING:-0}" != "1" ]; then
   done
   # Rebuild the invocation without --record so the inner run just prints.
   args=()
-  while [ $# -gt 0 ]; do
-    case "$1" in
-      --record) shift 2 ;;
-      *) args+=("$1"); shift ;;
-    esac
+  i=0
+  while [ "$i" -lt "${#ORIG_ARGS[@]}" ]; do
+    a="${ORIG_ARGS[$i]}"
+    if [ "$a" = "--record" ]; then i=$((i + 2)); continue; fi
+    args+=("$a"); i=$((i + 1))
   done
   cast="$(mktemp -u).cast"
+  # Quote each arg so values containing spaces survive the re-exec.
+  inner="$SELF"
+  for a in ${args[@]+"${args[@]}"}; do
+    inner="$inner $(printf '%q' "$a")"
+  done
   echo "demo: recording to $RECORD ..." >&2
   HOMIE_DEMO_RECORDING=1 asciinema rec --overwrite --quiet \
-    -c "$SELF ${args[*]}" "$cast"
+    --output-format asciicast-v2 -c "$inner" "$cast"
   agg --theme monokai "$cast" "$RECORD"
   rm -f "$cast"
   echo "demo: wrote $RECORD" >&2
