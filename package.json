@@ -43,6 +43,7 @@
     "scripts/tone-check.js",
     "scripts/tone-run.sh",
     "docs/logo.svg",
+    "docs/demo.gif",
     "LICENSE"
   ],
   "pi": {

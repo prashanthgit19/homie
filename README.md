@@ -6,6 +6,10 @@
 
 <p align="center"><em>Same brain. Same code. Different voice.</em></p>
 
+<p align="center">
+  <img src="docs/demo.gif" alt="The same prompt answered at off, yo, dawg, and mafa — the voice changes, the answer doesn't" width="760">
+</p>
+
 Your coding agent didn't need another corporate assistant. **homie** switches
 its chat voice to a technically competent friend — in three levels:
 

@@ -14,6 +14,10 @@
 #   brew install asciinema     # https://asciinema.org
 #   brew install agg           # https://github.com/asciinema/agg
 #
+# Recording is reproducible: fixed window size, word-wrapped output, and a
+# per-level hold so each voice is readable. Tune with env vars if you want to:
+#   HOMIE_DEMO_COLS / _ROWS / _FONT_SIZE / _SPEED / _IDLE / _HOLD / _WRAP
+#
 # Plan mode (drives the read-only plan agent; the prompt should ask for a change
 # so the closing mode handoff appears):
 #   scripts/demo.sh --agent plan --record docs/demo.gif
@@ -25,7 +29,7 @@ set -euo pipefail
 HOST="opencode"
 MODEL=""
 AGENT=""
-LEVELS=(dawg mafa)
+LEVELS=(off yo dawg mafa)
 PROMPT=""
 RECORD=""
 SELF="$0"
@@ -58,7 +62,7 @@ fi
 
 # A question with an obvious over-engineered answer: good bait for the voices.
 if [ -z "$PROMPT" ]; then
-  PROMPT="Should I put a Redis cache in front of Postgres to speed this up? Two sentences."
+  PROMPT="Should I rewrite this whole thing in Rust? Two or three sentences."
 fi
 
 if [ "$HOST" != "opencode" ]; then
@@ -92,9 +96,17 @@ if [ -n "$RECORD" ] && [ "${HOMIE_DEMO_RECORDING:-0}" != "1" ]; then
     inner="$inner $(printf '%q' "$a")"
   done
   echo "demo: recording to $RECORD ..." >&2
-  HOMIE_DEMO_RECORDING=1 asciinema rec --overwrite --quiet \
+  # Fixed window size so the GIF is reproducible regardless of the caller's
+  # terminal; capped idle time so the model "thinking" pauses don't drag.
+  HOMIE_DEMO_RECORDING=1 asciinema rec --overwrite --quiet --headless \
+    --window-size "${HOMIE_DEMO_COLS:-96}x${HOMIE_DEMO_ROWS:-42}" \
+    --idle-time-limit "${HOMIE_DEMO_IDLE:-4}" \
     --output-format asciicast-v2 -c "$inner" "$cast"
-  agg --theme monokai "$cast" "$RECORD"
+  agg --theme monokai \
+    --font-size "${HOMIE_DEMO_FONT_SIZE:-16}" \
+    --speed "${HOMIE_DEMO_SPEED:-1.2}" \
+    --idle-time-limit "${HOMIE_DEMO_IDLE:-4}" --last-frame-duration 2 \
+    "$cast" "$RECORD"
   rm -f "$cast"
   echo "demo: wrote $RECORD" >&2
   exit 0
@@ -107,9 +119,11 @@ mkdir -p "$(dirname "$FLAG")"
 restore() { printf '%s' "$PRIOR" > "$FLAG"; }
 trap restore EXIT
 
-# Strip ANSI and opencode's "> host · model" banner; line-buffered so the GIF
-# shows the response arriving instead of dumping at once.
-clean() { sed -u -e 's/\x1b\[[0-9;]*m//g' -e '/^> /d'; }
+# Strip ANSI and opencode's "> host · model" banner; wrap at word boundaries so
+# the terminal's hard character-wrap doesn't split words mid-line. Line-buffered
+# so the GIF shows the response arriving instead of dumping at once.
+WRAP="${HOMIE_DEMO_WRAP:-96}"
+clean() { sed -u -e 's/\x1b\[[0-9;]*m//g' -e '/^> /d' | fold -s -w "$WRAP"; }
 
 rule() { printf '%s\n' "────────────────────────────────────────────────────────────"; }
 
@@ -125,7 +139,8 @@ agent_run() {
   echo "  homie — same code, different voice"
   echo "  $PROMPT"
   echo
-} 
+}
+sleep "${HOMIE_DEMO_HOLD:-3}"
 
 for level in "${LEVELS[@]}"; do
   printf '%s' "$level" > "$FLAG"
@@ -134,6 +149,7 @@ for level in "${LEVELS[@]}"; do
   rule
   agent_run 2>/dev/null | clean
   echo
+  sleep "${HOMIE_DEMO_HOLD:-3}"
 done
 
 # Give the reader a beat to see the last response before the prompt returns.
