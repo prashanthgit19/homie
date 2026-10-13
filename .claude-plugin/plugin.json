@@ -6,6 +6,5 @@
   "author": {
     "name": "Prashanth K",
     "url": "https://github.com/prashanthgit19"
-  },
-  "hooks": "./hooks/claude-codex-hooks.json"
+  }
 }

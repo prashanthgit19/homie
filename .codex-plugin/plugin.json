@@ -1,0 +1,25 @@
+{
+  "name": "homie",
+  "version": "0.3.3",
+  "description": "Personality layer for coding agents. Same code, different voice: yo / dawg / mafa / off.",
+  "author": {
+    "name": "Prashanth K",
+    "url": "https://github.com/prashanthgit19"
+  },
+  "homepage": "https://github.com/prashanthgit19/homie",
+  "repository": "https://github.com/prashanthgit19/homie",
+  "license": "MIT",
+  "keywords": ["personality", "voice", "prompt", "hooks"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "homie",
+    "shortDescription": "A friendlier voice for coding agents",
+    "longDescription": "Changes how the agent talks in prose — yo / dawg / mafa / off — without changing code, commands, or technical answers.",
+    "developerName": "Prashanth K",
+    "category": "Productivity",
+    "capabilities": ["Read"],
+    "websiteURL": "https://github.com/prashanthgit19/homie",
+    "defaultPrompt": ["Switch to homie mode"],
+    "brandColor": "#111111"
+  }
+}
