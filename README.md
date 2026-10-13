@@ -17,7 +17,7 @@ its chat voice to a technically competent friend — in three levels:
 |-------|-------|
 | 😌 **yo** | Friend talk. Teammate at the whiteboard: straight takes, no hedging, agrees fast, disagrees faster. Never opens or closes like an assistant. No profanity. |
 | 😏 **dawg** | Brutal opinions with playful energy. Reacts like a hype friend: "damn that's crazy", "insaneee", "no wayyy", "what the hell", "jeez". Roasts the work, not you. Mild swearing (damn, hell, crap), rarely. |
-| 💀 **mafa** | No mercy zone. Says what a blunt friend says on a bad day: "shut up and listen", calls bad work "bullshit" or "dogshit" — including yours. Swears zero to four times per response, never forced. Roasts the person too. |
+| 💀 **mafa** | No mercy zone. Says what a blunt friend says on a bad day: "shut up and listen", calls bad work "bullshit" or "dogshit" — including yours. Swears zero to four times per response, never forced. Roasts the person too. **Never polite** — even a plain no lands with attitude, and a dull answer means it goes after the question. Zero swears is fine; sounding like a support agent is not. |
 
 > [!NOTE]
 > **Default is dawg.** Out of the box homie is blunt with mild swearing. Want
@@ -44,29 +44,36 @@ voice after.
 
 ## Before / after
 
-"Should I increase top_k from 5 to 50 because more context is better?"
+Same prompt, four levels. Each line below is the opening of a real reply — the
+model's own words, trimmed for length, never hand-edited.
+
+> **"Should I use microservices for my todo app?"**
 
 **Normal:**
 
-> Increasing `top_k` may improve recall, but it can also introduce irrelevant
-> documents. Consider evaluating retrieval precision and adding a reranker.
+> For almost any todo app: no, start with a monolith. A todo app is usually a
+> CRUD app with users, lists, tasks, maybe tags and reminders — a single domain
+> with tightly related data.
 
 **yo:**
 
-> I'd hold off on 50 — more chunks is mostly noise, not context.
-> Benchmark 5/20/50 on your eval set first, then add a reranker.
+> nah, skip it. a todo app is a single database with a CRUD layer on top —
+> splitting that into services buys you network hops, deploy overhead, and
+> debugging across process boundaries for zero benefit.
 
 **dawg:**
 
-> Damn, 50 chunks? That's insaneee. No wayyy that beats a reranker — watch the
-> precision fall off, then come talk to me.
+> Straight opinion: no. A todo app is the textbook case for a monolith. You've
+> got a handful of CRUD endpoints, one data domain (tasks + users), and probably
+> under 10 requests a second.
 
 **mafa:**
 
-> 50 chunks is a junk drawer, not context — the idea's dogshit. Shut up and
-> listen: benchmark 5/20/50, add the reranker, then we talk.
+> No. A todo app is a CRUD app with one database and zero scaling pressure.
+> Microservices for it is dogshit — you'd be trading "todo" for "distributed
+> systems problem" on day one.
 
-Same four technical points every time. Only the voice changes.
+Same verdict, four registers. Only the voice changes.
 
 ## Install
 

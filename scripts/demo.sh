@@ -16,7 +16,8 @@
 #
 # Recording is reproducible: fixed window size, word-wrapped output, and a
 # per-level hold so each voice is readable. Tune with env vars if you want to:
-#   HOMIE_DEMO_COLS / _ROWS / _FONT_SIZE / _LINE_HEIGHT / _SPEED / _IDLE / _HOLD / _WRAP
+#   HOMIE_DEMO_COLS / _ROWS / _FONT_SIZE / _LINE_HEIGHT / _SPEED / _IDLE / _HOLD
+#   HOMIE_DEMO_WRAP / _CHARS / _CWD
 #
 # Plan mode (drives the read-only plan agent; the prompt should ask for a change
 # so the closing mode handoff appears):
@@ -34,7 +35,15 @@ PROMPT=""
 RECORD=""
 SELF="$0"
 [ -f "$SELF" ] && SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ORIG_ARGS=("$@")
+
+# Frame geometry, shared by the display formatter and the recorder. WRAP trails
+# COLS a little so the formatter's own wrap breaks lines, never the terminal's
+# hard column wrap.
+COLS="${HOMIE_DEMO_COLS:-116}"
+ROWS="${HOMIE_DEMO_ROWS:-24}"
+WRAP="${HOMIE_DEMO_WRAP:-$((COLS - 2))}"
 
 usage() {
   # Print the leading comment block (skip shebang, stop at first non-comment).
@@ -60,9 +69,12 @@ if [ "${#LEVELS[@]}" -eq 0 ]; then
   exit 1
 fi
 
-# A question with an obvious over-engineered answer: good bait for the voices.
+# A question anyone can judge without domain context: the reader must already
+# know the right answer, so only the voice varies between levels. The premise is
+# deliberately an over-reach — a reasonable question gets mafa answering like a
+# polite engineer, which is the one thing mafa must never be.
 if [ -z "$PROMPT" ]; then
-  PROMPT="Should I rewrite this whole thing in Rust? Two or three sentences."
+  PROMPT="Should I use microservices for my todo app?"
 fi
 
 if [ "$HOST" != "opencode" ]; then
@@ -99,7 +111,7 @@ if [ -n "$RECORD" ] && [ "${HOMIE_DEMO_RECORDING:-0}" != "1" ]; then
   # Fixed window size so the GIF is reproducible regardless of the caller's
   # terminal; capped idle time so the model "thinking" pauses don't drag.
   HOMIE_DEMO_RECORDING=1 asciinema rec --overwrite --quiet --headless \
-    --window-size "${HOMIE_DEMO_COLS:-132}x${HOMIE_DEMO_ROWS:-32}" \
+    --window-size "${COLS}x${ROWS}" \
     --idle-time-limit "${HOMIE_DEMO_IDLE:-3}" \
     --output-format asciicast-v2 -c "$inner" "$cast"
   agg --theme monokai \
@@ -117,14 +129,27 @@ fi
 PRIOR="off"
 [ -f "$FLAG" ] && PRIOR="$(cat "$FLAG")"
 mkdir -p "$(dirname "$FLAG")"
-restore() { printf '%s' "$PRIOR" > "$FLAG"; }
-trap restore EXIT
+SCRATCH=""
+if [ -z "${HOMIE_DEMO_CWD:-}" ]; then
+  SCRATCH="$(mktemp -d)"
+  DEMO_CWD="$SCRATCH"
+else
+  DEMO_CWD="$(cd "$HOMIE_DEMO_CWD" && pwd)"
+fi
+cleanup() {
+  printf '%s' "$PRIOR" > "$FLAG"
+  [ -z "$SCRATCH" ] || rm -rf "$SCRATCH"
+}
+trap cleanup EXIT
 
-# Strip ANSI and opencode's "> host · model" banner; wrap at word boundaries so
-# the terminal's hard character-wrap doesn't split words mid-line. Line-buffered
-# so the GIF shows the response arriving instead of dumping at once.
-WRAP="${HOMIE_DEMO_WRAP:-96}"
-clean() { sed -u -e 's/\x1b\[[0-9;]*m//g' -e '/^> /d' | fold -s -w "$WRAP"; }
+# Strip ANSI and opencode's "> host · model" banner, then show only the opening
+# of each reply — a sentence or two, trailing off. Truncating the *display*
+# keeps the answers genuine (no "answer in two sentences" prompt constraint);
+# the register is already unmistakable in the first line. See demo-format.js.
+clean() {
+  sed -e 's/\x1b\[[0-9;]*m//g' -e '/^> /d' \
+    | HOMIE_DEMO_WRAP="$WRAP" node "$SCRIPT_DIR/demo-format.js"
+}
 
 # One colour per level so the four voices read apart at a glance. The label sits
 # on a single line (no stacked rules) so the frame stays short — landscape.
@@ -138,11 +163,16 @@ level_colour() {
   esac
 }
 
+# Run the agent from a scratch directory by default. Running it inside this
+# plugin's own repo makes the agent read AGENTS.md / SKILL.md / README and echo
+# them back (leaked rule names, stray fragments); a neutral cwd keeps the answer
+# about the prompt alone. Set HOMIE_DEMO_CWD to a repo if you want repo context
+# (e.g. for a plan-mode demo).
 agent_run() {
   local args=()
   [ -n "$AGENT" ] && args+=(--agent "$AGENT")
   [ -n "$MODEL" ] && args+=(-m "$MODEL")
-  opencode run ${args[@]+"${args[@]}"} "$PROMPT"
+  ( cd "$DEMO_CWD" && opencode run ${args[@]+"${args[@]}"} "$PROMPT" )
 }
 
 {
