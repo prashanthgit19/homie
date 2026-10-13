@@ -100,13 +100,13 @@ if [ -n "$RECORD" ] && [ "${HOMIE_DEMO_RECORDING:-0}" != "1" ]; then
   # terminal; capped idle time so the model "thinking" pauses don't drag.
   HOMIE_DEMO_RECORDING=1 asciinema rec --overwrite --quiet --headless \
     --window-size "${HOMIE_DEMO_COLS:-132}x${HOMIE_DEMO_ROWS:-32}" \
-    --idle-time-limit "${HOMIE_DEMO_IDLE:-3}" \
+    --idle-time-limit "${HOMIE_DEMO_IDLE:-9}" \
     --output-format asciicast-v2 -c "$inner" "$cast"
   agg --theme monokai \
     --font-size "${HOMIE_DEMO_FONT_SIZE:-15}" \
     --line-height "${HOMIE_DEMO_LINE_HEIGHT:-1.25}" \
-    --speed "${HOMIE_DEMO_SPEED:-2.0}" \
-    --idle-time-limit "${HOMIE_DEMO_IDLE:-3}" --last-frame-duration 2 \
+    --speed "${HOMIE_DEMO_SPEED:-1.0}" \
+    --idle-time-limit "${HOMIE_DEMO_IDLE:-9}" --last-frame-duration 10 \
     "$cast" "$RECORD"
   rm -f "$cast"
   echo "demo: wrote $RECORD" >&2
@@ -151,7 +151,7 @@ agent_run() {
   printf '\033[38;5;250m  %s\033[0m\n' "$PROMPT"
   echo
 }
-sleep "${HOMIE_DEMO_HOLD:-3}"
+sleep 4
 
 for level in "${LEVELS[@]}"; do
   printf '%s' "$level" > "$FLAG"
@@ -159,7 +159,7 @@ for level in "${LEVELS[@]}"; do
     "$(level_colour "$level")" "$level"
   agent_run 2>/dev/null | clean
   echo
-  sleep "${HOMIE_DEMO_HOLD:-3}"
+  sleep "${HOMIE_DEMO_HOLD:-8}"
 done
 
 # Give the reader a beat to see the last response before the prompt returns.
