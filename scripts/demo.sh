@@ -6,13 +6,17 @@
 # for recording with asciinema + agg, but works fine as a plain terminal run.
 #
 # Usage:
-#   scripts/demo.sh [--host opencode] [--model provider/model]
+#   scripts/demo.sh [--host opencode] [--model provider/model] [--agent name]
 #                   [--levels "dawg mafa"] [--prompt "..."] [--record out.gif]
 #
 # Recording (requires `asciinema` and `agg`):
 #   scripts/demo.sh --record docs/demo.gif
 #   brew install asciinema     # https://asciinema.org
-#   cargo install --locked agg # https://github.com/asciinema/agg
+#   brew install agg           # https://github.com/asciinema/agg
+#
+# Plan mode (drives the read-only plan agent; the prompt should ask for a change
+# so the closing mode handoff appears):
+#   scripts/demo.sh --agent plan --record docs/demo.gif
 #
 # The active level is restored to whatever it was before the run.
 
@@ -20,6 +24,7 @@ set -euo pipefail
 
 HOST="opencode"
 MODEL=""
+AGENT=""
 LEVELS=(dawg mafa)
 PROMPT=""
 RECORD=""
@@ -37,6 +42,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --host)   HOST="$2"; shift 2 ;;
     --model)  MODEL="$2"; shift 2 ;;
+    --agent)  AGENT="$2"; shift 2 ;;
     --levels) read -r -a LEVELS <<< "$2"; shift 2 ;;
     --prompt) PROMPT="$2"; shift 2 ;;
     --record) RECORD="$2"; shift 2 ;;
@@ -108,11 +114,10 @@ clean() { sed -u -e 's/\x1b\[[0-9;]*m//g' -e '/^> /d'; }
 rule() { printf '%s\n' "────────────────────────────────────────────────────────────"; }
 
 agent_run() {
-  if [ -n "$MODEL" ]; then
-    opencode run -m "$MODEL" "$PROMPT"
-  else
-    opencode run "$PROMPT"
-  fi
+  local args=()
+  [ -n "$AGENT" ] && args+=(--agent "$AGENT")
+  [ -n "$MODEL" ] && args+=(-m "$MODEL")
+  opencode run ${args[@]+"${args[@]}"} "$PROMPT"
 }
 
 {
