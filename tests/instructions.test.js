@@ -178,6 +178,17 @@ test('fallback instructions carry a mode handoff example', () => {
   }
 });
 
+test('mode handoff rule keeps the load-bearing host-wording hook', () => {
+  // Removing this line during generalization regressed the mafa handoff to
+  // voiceless. Guard it so a future edit cannot quietly drop it.
+  for (const level of ['yo', 'dawg', 'mafa']) {
+    const out = getHomieInstructions(level);
+    assert.ok(out.includes('hands you the wording'), level);
+    assert.ok(out.includes('switch to build mode'), level);
+  }
+  assert.ok(getFallbackInstructions('dawg').includes('hands you the wording'));
+});
+
 test('after(() => cleanup)', () => {});
 
 test.after(() => {
