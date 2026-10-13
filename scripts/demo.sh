@@ -105,7 +105,7 @@ if [ -n "$RECORD" ] && [ "${HOMIE_DEMO_RECORDING:-0}" != "1" ]; then
   agg --theme monokai \
     --font-size "${HOMIE_DEMO_FONT_SIZE:-15}" \
     --line-height "${HOMIE_DEMO_LINE_HEIGHT:-1.25}" \
-    --speed "${HOMIE_DEMO_SPEED:-2.0}" \
+    --speed "${HOMIE_DEMO_SPEED:-4.0}" \
     --idle-time-limit "${HOMIE_DEMO_IDLE:-3}" --last-frame-duration 10 \
     "$cast" "$RECORD"
   rm -f "$cast"
