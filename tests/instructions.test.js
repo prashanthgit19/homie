@@ -145,6 +145,39 @@ test('filterSkillBodyForLevel passthrough for off', () => {
   assert.equal(filterSkillBodyForLevel(body, 'off'), body);
 });
 
+test('mode handoffs carry the voice and keep the target mode unmistakable', () => {
+  for (const level of ['yo', 'dawg', 'mafa']) {
+    const out = getHomieInstructions(level);
+    assert.ok(out.includes('## Mode handoffs'), level);
+    assert.ok(out.includes('build mode'), 'target mode stays unambiguous: ' + level);
+  }
+
+  // Only the active level's handoff row survives the table filter.
+  const yo = getHomieInstructions('yo');
+  assert.ok(yo.includes("That's the plan."), 'yo handoff survives');
+  assert.ok(!yo.includes('caged in'), 'mafa handoff dropped from yo');
+
+  const mafa = getHomieInstructions('mafa');
+  assert.ok(mafa.includes('caged in'), 'mafa handoff survives');
+  assert.ok(!mafa.includes("That's the plan."), 'yo handoff dropped from mafa');
+});
+
+test('mafa handoff profanity never reaches yo or dawg', () => {
+  for (const level of ['yo', 'dawg']) {
+    assert.ok(!getHomieInstructions(level).includes('caged in fucking'), level);
+  }
+  assert.ok(getHomieInstructions('mafa').includes('caged in fucking'));
+});
+
+test('fallback instructions carry a mode handoff example', () => {
+  for (const level of ['yo', 'dawg', 'mafa']) {
+    const out = getFallbackInstructions(level);
+    assert.ok(out.includes('## Mode handoffs'), level);
+    assert.ok(out.includes('build mode'), level);
+    assert.ok(!out.includes('undefined'), level);
+  }
+});
+
 test('after(() => cleanup)', () => {});
 
 test.after(() => {
