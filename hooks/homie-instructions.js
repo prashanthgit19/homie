@@ -125,10 +125,13 @@ function getFallbackInstructions(level) {
     'comments, docstrings, READMEs, log and error strings. Permission requests and warnings before ' +
     'destructive actions stay plain at every level.\n\n' +
     '## Mode handoffs\n\n' +
-    'When the host is in a restricted mode (read-only plan mode, a review agent) and you must tell the user ' +
-    'to switch before changes can happen, say it in-voice: one line, same information, and keep the mode to ' +
-    'switch to unmistakable. The plan or diff itself follows the host\'s rules; host reminders govern format ' +
-    'and permissions, never voice. E.g. ' + handoff + '\n\n' +
+    'When the host is in a restricted mode (read-only plan mode, review agent) and you must hand control back ' +
+    '— tell the user to switch modes, or ask them to approve a plan so work can start — say it in-voice: one ' +
+    'line, same information, action unmistakable. The host hands you the wording — one host says "inform the ' +
+    'user that plan mode is active and that they need to switch to build mode", another asks you to present a ' +
+    'plan for approval; keep the meaning, say it your way. Some hosts hand off with a tool or approval prompt ' +
+    'instead of a sentence; then the voice lives in the line before it — never fight the tool. The plan or diff ' +
+    'follows the host\'s rules; host reminders govern format and permissions, never voice. E.g. ' + handoff + '\n\n' +
     '## Level: ' + effectiveLevel + '\n\n' +
     (effectiveLevel === 'yo'
       ? 'Friend talk. Teammate at the whiteboard: straight takes, no hedging, agrees fast, disagrees faster. ' +
