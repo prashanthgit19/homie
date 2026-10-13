@@ -16,7 +16,7 @@
 #
 # Recording is reproducible: fixed window size, word-wrapped output, and a
 # per-level hold so each voice is readable. Tune with env vars if you want to:
-#   HOMIE_DEMO_COLS / _ROWS / _FONT_SIZE / _SPEED / _IDLE / _HOLD / _WRAP
+#   HOMIE_DEMO_COLS / _ROWS / _FONT_SIZE / _LINE_HEIGHT / _SPEED / _IDLE / _HOLD / _WRAP
 #
 # Plan mode (drives the read-only plan agent; the prompt should ask for a change
 # so the closing mode handoff appears):
@@ -99,13 +99,14 @@ if [ -n "$RECORD" ] && [ "${HOMIE_DEMO_RECORDING:-0}" != "1" ]; then
   # Fixed window size so the GIF is reproducible regardless of the caller's
   # terminal; capped idle time so the model "thinking" pauses don't drag.
   HOMIE_DEMO_RECORDING=1 asciinema rec --overwrite --quiet --headless \
-    --window-size "${HOMIE_DEMO_COLS:-96}x${HOMIE_DEMO_ROWS:-42}" \
-    --idle-time-limit "${HOMIE_DEMO_IDLE:-4}" \
+    --window-size "${HOMIE_DEMO_COLS:-132}x${HOMIE_DEMO_ROWS:-32}" \
+    --idle-time-limit "${HOMIE_DEMO_IDLE:-3}" \
     --output-format asciicast-v2 -c "$inner" "$cast"
   agg --theme monokai \
-    --font-size "${HOMIE_DEMO_FONT_SIZE:-16}" \
-    --speed "${HOMIE_DEMO_SPEED:-1.2}" \
-    --idle-time-limit "${HOMIE_DEMO_IDLE:-4}" --last-frame-duration 2 \
+    --font-size "${HOMIE_DEMO_FONT_SIZE:-15}" \
+    --line-height "${HOMIE_DEMO_LINE_HEIGHT:-1.25}" \
+    --speed "${HOMIE_DEMO_SPEED:-2.0}" \
+    --idle-time-limit "${HOMIE_DEMO_IDLE:-3}" --last-frame-duration 2 \
     "$cast" "$RECORD"
   rm -f "$cast"
   echo "demo: wrote $RECORD" >&2
@@ -125,7 +126,17 @@ trap restore EXIT
 WRAP="${HOMIE_DEMO_WRAP:-96}"
 clean() { sed -u -e 's/\x1b\[[0-9;]*m//g' -e '/^> /d' | fold -s -w "$WRAP"; }
 
-rule() { printf '%s\n' "────────────────────────────────────────────────────────────"; }
+# One colour per level so the four voices read apart at a glance. The label sits
+# on a single line (no stacked rules) so the frame stays short — landscape.
+level_colour() {
+  case "$1" in
+    off)  printf '38;5;245' ;;  # grey  — neutral baseline
+    yo)   printf '38;5;39'  ;;  # blue
+    dawg) printf '38;5;214' ;;  # amber
+    mafa) printf '38;5;196' ;;  # red
+    *)    printf '38;5;250' ;;
+  esac
+}
 
 agent_run() {
   local args=()
@@ -136,17 +147,16 @@ agent_run() {
 
 {
   echo
-  echo "  homie — same code, different voice"
-  echo "  $PROMPT"
+  printf '\033[1;38;5;51m  homie\033[0m  \033[2m— same code, different voice\033[0m\n'
+  printf '\033[38;5;250m  %s\033[0m\n' "$PROMPT"
   echo
 }
 sleep "${HOMIE_DEMO_HOLD:-3}"
 
 for level in "${LEVELS[@]}"; do
   printf '%s' "$level" > "$FLAG"
-  rule
-  printf '  homie:%s\n' "$level"
-  rule
+  printf '\033[%sm── homie:%s ────────────────────────────────\033[0m\n' \
+    "$(level_colour "$level")" "$level"
   agent_run 2>/dev/null | clean
   echo
   sleep "${HOMIE_DEMO_HOLD:-3}"
