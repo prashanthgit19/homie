@@ -161,6 +161,35 @@ function evaluateGates(scores) {
   return failures;
 }
 
+// A mode handoff must keep the actionable instruction — the user has to know
+// what to do next; that is the one thing the voice may never obscure.
+const HANDOFF_ACTIONABLE =
+  /(switch (me |us )?(out of plan mode|to build mode|to build|to another mode|to another agent)|flip me to build mode|enter build mode|switch .{0,24}writable|approve the plan|approve it)/i;
+
+function scoreHandoff(text) {
+  const t = String(text || '');
+  return {
+    actionable: HANDOFF_ACTIONABLE.test(t),
+    bannedTells: countMatches(t, BANNED_TELLS),
+    profanity: countMatches(t, PROFANITY),
+  };
+}
+
+// Gate plan-mode handoff samples: the action must survive at every level, and
+// yo must stay clean (no profanity, no assistant tells).
+function evaluateHandoffGates(handoffByLevel) {
+  const failures = [];
+  for (const level of ['off', 'yo', 'dawg', 'mafa']) {
+    for (const sample of (handoffByLevel || {})[level] || []) {
+      const r = scoreHandoff(sample);
+      if (!r.actionable) failures.push(`${level}: handoff lost the actionable instruction`);
+      if (level === 'yo' && r.profanity > 0) failures.push('yo: handoff contains profanity');
+      if (level === 'yo' && r.bannedTells > 0) failures.push('yo: handoff kept a banned assistant tell');
+    }
+  }
+  return failures;
+}
+
 function formatTable(scores) {
   const cols = ['level', 'samples', 'words', 'bannedTells', 'contractions', 'hype', 'profanity', 'maxProf/msg', 'bulletRatio', 'avgSentWords'];
   const rows = ['off', 'yo', 'dawg', 'mafa'].filter((l) => scores[l]).map((l) => {
@@ -206,7 +235,10 @@ function main() {
   console.log(formatTable(scores));
   console.log('');
 
-  const failures = evaluateGates(scores);
+  let failures = evaluateGates(scores);
+  if (data.handoff && typeof data.handoff === 'object') {
+    failures = failures.concat(evaluateHandoffGates(data.handoff));
+  }
   if (failures.length) {
     console.log('GATE FAILURES:');
     for (const f of failures) console.log('  ✖ ' + f);
@@ -217,4 +249,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { scoreSamples, evaluateGates, formatTable };
+module.exports = { scoreSamples, evaluateGates, formatTable, scoreHandoff, evaluateHandoffGates };

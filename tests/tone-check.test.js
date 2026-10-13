@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { scoreSamples, evaluateGates } = require('../scripts/tone-check');
+const { scoreSamples, evaluateGates, evaluateHandoffGates } = require('../scripts/tone-check');
 
 test('scoreSamples counts banned tells, profanity, hype, bullets', () => {
   const s = scoreSamples([
@@ -39,6 +39,19 @@ test('evaluateGates passes a well-formed sample set', () => {
     mafa: scoreSamples(data.mafa, 'mafa'),
   };
   assert.deepEqual(evaluateGates(scores), []);
+});
+
+test('evaluateHandoffGates requires the action and keeps yo clean', () => {
+  const good = {
+    yo: ["That's the plan. I can't change anything from here — switch me to build mode and I'll get started."],
+    mafa: ["Plan's done. I'm caged in fucking read-only, so switch me to build mode if you actually want this built."],
+  };
+  assert.deepEqual(evaluateHandoffGates(good), []);
+
+  const bad = { yo: ['Sounds good, let me know if you have questions.'] };
+  const fails = evaluateHandoffGates(bad);
+  assert.ok(fails.some((f) => f.startsWith('yo: handoff lost the actionable instruction')));
+  assert.ok(fails.some((f) => f.includes('banned assistant tell')));
 });
 
 test('evaluateGates flags yo profanity, dawg hype absence, mafa over-budget', () => {

@@ -189,6 +189,19 @@ test('mode handoff rule keeps the load-bearing host-wording hook', () => {
   assert.ok(getFallbackInstructions('dawg').includes('hands you the wording'));
 });
 
+test('plans section survives at every level with the no-degradation guard', () => {
+  for (const level of ['yo', 'dawg', 'mafa']) {
+    const out = getHomieInstructions(level).toLowerCase();
+    assert.ok(out.includes('## plans'), level);
+    assert.ok(out.includes('open it with the verdict'), level);
+    assert.ok(out.includes('never drop a step'), level);
+  }
+  const fb = getFallbackInstructions('dawg').toLowerCase();
+  assert.ok(fb.includes('## plans'));
+  assert.ok(fb.includes('open it with the verdict'));
+  assert.ok(fb.includes('never drop a step'));
+});
+
 test('after(() => cleanup)', () => {});
 
 test.after(() => {
